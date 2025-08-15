@@ -1,0 +1,18 @@
+## Interface: 30403
+## Title: |cff58be81S|r|cffffffffimple|r |cff58be81Q|r|cffffffffuest|r |cff58be81P|r|cfffffffflates|r
+## Notes: Displays quest progress icons on enemy nameplates.|n|r   |cff58be81By DonnieDice|r
+## Version: 1.1.0
+## Author: DonnieDice
+## Email: 60427166+donniedice@users.noreply.github.com
+## SavedVariables: SQPSettings
+## IconTexture: Interface\AddOns\SimpleQuestPlates\images\icon
+## DefaultState: Enabled
+
+## X-Category: UI Media, Questing & Leveling, Miscellaneous
+## X-Website: https://github.com/donniedice/SimpleQuestPlates
+## X-Curse-Project-ID: 1319776
+## X-Wago-ID: ANz0AwK4
+## X-WoWI-ID: 26957 
+
+## Main loader
+SimpleQuestPlates.xml
