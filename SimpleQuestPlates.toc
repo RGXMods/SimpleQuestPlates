@@ -7,7 +7,7 @@
 ## Group: RGX
 ## Email: 60427166+donniedice@users.noreply.github.com
 ## SavedVariables: SQPSettings
-## IconTexture: Interface\AddOns\SimpleQuestPlates\media\logo
+## IconTexture: Interface\AddOns\SimpleQuestPlates\media\logo.tga
 ## DefaultState: Enabled
 ## RequiredDeps: RGX-Framework
 
