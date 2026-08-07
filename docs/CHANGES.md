@@ -1,3 +1,9 @@
+## v1.9.6-classic - 2026-08-07
+- Forked from SQP v1.9.6 (pre-RGX-Framework integration) for Classic-only maintenance.
+- TOC: Classic-only interfaces 11509 (Classic Era), 20506 (TBC Anniversary), 50504 (MoP Classic).
+- Renamed addon to SQP_Classic, SavedVariables to SQPClassicSettings.
+- Removed RGX-Framework dependency (was OptionalDeps in v1.9.7+).
+
 ## v1.9.6
 - Fixed slash command robustness issues:
   - Replaced unsafe input trimming with safe string normalization.
