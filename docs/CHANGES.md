@@ -1,4 +1,9 @@
-﻿# v2.1.1 - 2026-06-30
+﻿# v2.1.2 - 2026-08-07
+
+## Changes
+- TOC bump: Now retail-only (Interface 120007). Removed Classic/Cata/MoP interface entries.
+
+# v2.1.1 - 2026-06-30
 
 ## Changes
 
