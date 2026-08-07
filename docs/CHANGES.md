@@ -1,4 +1,9 @@
-﻿# v2.1.2 - 2026-08-07
+﻿# v2.1.3 - 2026-08-07
+
+## Changes
+- Add Category/Group RGX for addon menu section.
+
+# v2.1.2 - 2026-08-07
 
 ## Changes
 - TOC bump: Now retail-only (Interface 120007). Removed Classic/Cata/MoP interface entries.
