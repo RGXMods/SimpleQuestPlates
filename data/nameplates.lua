@@ -302,11 +302,7 @@ function SQP:OnPlateShow(nameplate, unitID)
         end
     end
 
-    if C_Timer and type(C_Timer.After) == "function" then
-        C_Timer.After(0.15, delayedRecheck)
-    elseif RGX and type(RGX.After) == "function" then
-        RGX:After(0.15, delayedRecheck, "SQP nameplate recheck")
-    end
+    RGX:After(0.15, delayedRecheck, "SQP nameplate recheck")
 
     reportSlowPath("OnPlateShow", started)
 end
