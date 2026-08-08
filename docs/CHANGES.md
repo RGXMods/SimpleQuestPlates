@@ -1,3 +1,15 @@
+# v1.9.7-classic - 2026-08-08
+
+## Changes
+- **RGX-Framework integration**: Migrated from standalone to RGX-Framework with cross-version compat layer
+- **DB migration**: `SQPClassicSettings` → `RGX:NewDatabase("SQPClassicSettings", ...)` with `profileIsGlobal = true`
+- **Timers**: Replaced manual `C_Timer` usage with `RGX:After` / `RGX:Every`
+- **Minimap**: Uses `RGXMinimap:Create()` 
+- **Slash commands**: Registered via `RGX:RegisterSlashCommand`
+- **Events**: Registered via `RGX:RegisterEvent` with compat layer API shims
+- **Backward-compat**: `SQPClassicSettings` global remains as proxy to `SQP.db.global`
+- **Compat layer**: Uses RGX-Framework's new `core/compat.lua` for Classic API shims
+
 ## v1.9.6-classic - 2026-08-07
 - Forked from SQP v1.9.6 (pre-RGX-Framework integration) for Classic-only maintenance.
 - TOC: Classic-only interfaces 11509 (Classic Era), 20506 (TBC Anniversary), 50504 (MoP Classic).
