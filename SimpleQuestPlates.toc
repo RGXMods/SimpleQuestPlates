@@ -12,7 +12,7 @@
 ## RequiredDeps: RGX-Framework
 
 ## X-Category: UI Media, Questing & Leveling, Miscellaneous
-## X-Website: https://github.com/donniedice/SimpleQuestPlates
+## X-Website: https://github.com/RGXMods/SimpleQuestPlates
 ## X-Curse-Project-ID: 1319776
 
 ## X-WoWI-ID: 26957 
