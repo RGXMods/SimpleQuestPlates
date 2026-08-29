@@ -15,7 +15,6 @@
 ## X-Website: https://github.com/RGXMods/SimpleQuestPlates
 ## X-Curse-Project-ID: 1319776
 
-## X-WoWI-ID: 26957 
 
 ## Main loader
 SimpleQuestPlates.xml
