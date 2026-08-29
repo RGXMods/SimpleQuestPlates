@@ -1,9 +1,9 @@
-# <img src="images/logo.png" width="25" height="25"> <span style="color:#58be81">S</span><span style="color:#58be81">Q</span><span style="color:#58be81">P</span> <span style="color:#fff">|</span> <span style="color:#58be81">S</span><span style="color:#fff">imple </span><span style="color:#58be81">Q</span><span style="color:#fff">uest </span><span style="color:#58be81">P</span><span style="color:#fff">lates!</span>
+# <img src="media/logo.png" width="25" height="25"> <span style="color:#58be81">S</span><span style="color:#58be81">Q</span><span style="color:#58be81">P</span> <span style="color:#fff">|</span> <span style="color:#58be81">S</span><span style="color:#fff">imple </span><span style="color:#58be81">Q</span><span style="color:#fff">uest </span><span style="color:#58be81">P</span><span style="color:#fff">lates!</span>
 ## <img src="media/logo.png" height="20" alt="SQP logo"> <span style="color:#8B1538">R</span><span style="color:#8B1538">G</span><span style="color:#8B1538">X</span> <span style="color:#4ecdc4">Mods</span> <span style="color:#3598db">-</span> [<span style="color:#8B1538">R</span><span style="color:#7598b6">ealm</span><span style="color:#8B1538">G</span><span style="color:#8B1538">X</span>](https://realmgx.com) <span style="color:#ff6b6b">Community Project</span>
 
 <div align="center">
 
-<img src="images/logo.png" alt="SQP Logo" width="128" height="128">
+<img src="media/logo.png" alt="SQP Logo" width="128" height="128">
 
 [![RGX Mods](https://img.shields.io/badge/RGX-Simple%20Quest%20Plates!-8B1538?style=for-the-badge&logo=github&logoColor=white)](https://github.com/RGXMods/SimpleQuestPlates)
 [![RGX Mods](https://img.shields.io/badge/RGX-Mods%20Collection-8B1538?style=for-the-badge&logo=github&logoColor=white)](https://discord.gg/N7kdKAHVVF)
@@ -20,15 +20,15 @@
 ---
 
 <!-- GitHub Stats & Badges -->
-[![GitHub release](https://img.shields.io/github/v/release/donniedice/SimpleQuestPlates?style=for-the-badge&logo=github&color=success)](https://github.com/RGXMods/SimpleQuestPlates/releases)
-[![GitHub stars](https://img.shields.io/github/stars/donniedice/SimpleQuestPlates?style=for-the-badge&logo=github&color=yellow)](https://github.com/RGXMods/SimpleQuestPlates/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/donniedice/SimpleQuestPlates?style=for-the-badge&logo=github&color=blue)](https://github.com/RGXMods/SimpleQuestPlates/network/members)
-[![GitHub issues](https://img.shields.io/github/issues/donniedice/SimpleQuestPlates?style=for-the-badge&logo=github&color=red)](https://github.com/RGXMods/SimpleQuestPlates/issues)
-[![GitHub license](https://img.shields.io/github/license/donniedice/SimpleQuestPlates?style=for-the-badge&logo=github&color=lightgrey)](https://github.com/RGXMods/SimpleQuestPlates/blob/main/LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/RGXMods/SimpleQuestPlates?style=for-the-badge&logo=github&color=success)](https://github.com/RGXMods/SimpleQuestPlates/releases)
+[![GitHub stars](https://img.shields.io/github/stars/RGXMods/SimpleQuestPlates?style=for-the-badge&logo=github&color=yellow)](https://github.com/RGXMods/SimpleQuestPlates/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/RGXMods/SimpleQuestPlates?style=for-the-badge&logo=github&color=blue)](https://github.com/RGXMods/SimpleQuestPlates/network/members)
+[![GitHub issues](https://img.shields.io/github/issues/RGXMods/SimpleQuestPlates?style=for-the-badge&logo=github&color=red)](https://github.com/RGXMods/SimpleQuestPlates/issues)
+[![GitHub license](https://img.shields.io/github/license/RGXMods/SimpleQuestPlates?style=for-the-badge&logo=github&color=lightgrey)](LICENSE)
 
-[![GitHub last commit](https://img.shields.io/github/last-commit/donniedice/SimpleQuestPlates?style=flat-square&logo=github)](https://github.com/RGXMods/SimpleQuestPlates/commits/main)
-[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/donniedice/SimpleQuestPlates?style=flat-square&logo=github)](https://github.com/RGXMods/SimpleQuestPlates/graphs/commit-activity)
-[![GitHub repo size](https://img.shields.io/github/repo-size/donniedice/SimpleQuestPlates?style=flat-square&logo=github)](https://github.com/RGXMods/SimpleQuestPlates)
+[![GitHub last commit](https://img.shields.io/github/last-commit/RGXMods/SimpleQuestPlates?style=flat-square&logo=github)](https://github.com/RGXMods/SimpleQuestPlates/commits/main)
+[![GitHub commit activity](https://img.shields.io/github/commit-activity/m/RGXMods/SimpleQuestPlates?style=flat-square&logo=github)](https://github.com/RGXMods/SimpleQuestPlates/graphs/commit-activity)
+[![GitHub repo size](https://img.shields.io/github/repo-size/RGXMods/SimpleQuestPlates?style=flat-square&logo=github)](https://github.com/RGXMods/SimpleQuestPlates)
 
 <!-- Platform Badges -->
 [![CurseForge](https://img.shields.io/badge/CurseForge-Downloads-orange?style=flat-square&logo=curseforge)](https://www.curseforge.com/wow/addons/simple-quest-plates)
@@ -61,7 +61,7 @@
 - <span style="color:#58be81">📢 **First to know**</span> <span style="color:#e67e23">about new</span> <span style="color:#8B1538">R</span><span style="color:#8B1538">G</span><span style="color:#8B1538">X</span> <span style="color:#4ecdc4">Mods</span> <span style="color:#e67e23">releases</span>
 - <span style="color:#e67e23">🎉 **Events, giveaways**, and community activities</span>
 
-<img src="images/kiwi.gif" alt="RealmGX Kiwi" width="100">
+<img src="media/kiwi.gif" alt="RealmGX Kiwi" width="100">
 
 **<span style="color:#ff6b6b">⚠️ WARNING:</span>** <span style="color:#e67e23">May cause you to prioritize questing over literally everything else.</span>
 
@@ -94,7 +94,7 @@ _<span style="color:#e67e23">Every donation helps fund new features and improvem
 **<span style="color:#58be81">S</span><span style="color:#58be81">Q</span><span style="color:#58be81">P</span> <span style="color:#fff">|</span> <span style="color:#58be81">S</span><span style="color:#fff">imple </span><span style="color:#58be81">Q</span><span style="color:#fff">uest </span><span style="color:#58be81">P</span><span style="color:#fff">lates!</span>** <span style="color:#e67e23">enhances your</span> <span style="color:#06c">World of Warcraft</span> <span style="color:#e67e23">experience by displaying quest progress icons directly on enemy nameplates. Know at a glance which enemies you need to defeat for your quests, how many items they drop, and your overall progress — all without cluttering your interface.</span>
 
 <div align="center">
-<img src="images/in-game-options.png" alt="SQP Options Panel" width="600">
+<img src="media/in-game-options.png" alt="SQP Options Panel" width="600">
 </div>
 
 ### <span style="color:#58be81">🔥 Why Choose SQP?</span>
@@ -195,9 +195,11 @@ _<span style="color:#ff6b6b">Want to help translate?</span> <span style="color:#
 
 | WoW Version | Interface | Status |
 |-------------|-----------|--------|
-| **Retail Midnight** | `120000`, `120001` | ✅ Fully Supported |
+| **Retail Midnight** | `120007` | ✅ Fully Supported |
 
 </div>
+
+**<span style="color:#ff6b6b">Required Dependency:</span>** <span style="color:#e67e23">[RGX-Framework](https://github.com/RGXMods/RGX-Framework) must be installed and enabled.</span>
 
 ---
 
@@ -296,7 +298,7 @@ _<span style="color:#e67e23">See</span> [<span style="color:#58be81">docs/CHANGE
 
 ## <span style="color:#ff6b6b">📄 License</span>
 
-<span style="color:#e67e23">This project is licensed under the</span> [<span style="color:#2dc26b">MIT License</span>](https://github.com/RGXMods/SimpleQuestPlates/blob/main/LICENSE)<span style="color:#e67e23">.</span>
+<span style="color:#e67e23">This project is licensed under the</span> [<span style="color:#2dc26b">MIT License</span>](LICENSE)<span style="color:#e67e23">.</span>
 
 ---
 
@@ -311,7 +313,7 @@ _<span style="color:#e67e23">"Quest smarter, not harder."</span>_
 
 **<span style="color:#58be81">⚠️ WARNING:</span>** <span style="color:#e67e23">May cause you to prioritize questing over literally everything else.</span>
 
-<img src="images/kiwi.gif" alt="RealmGX Kiwi" width="80">
+<img src="media/kiwi.gif" alt="RealmGX Kiwi" width="80">
 
 **<span style="color:#2dc26b">The Kiwi Says:</span>** <span style="color:#b96ad9">"Bwwiiiee."</span>
 
