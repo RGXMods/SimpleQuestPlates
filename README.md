@@ -196,6 +196,7 @@ _<span style="color:#ff6b6b">Want to help translate?</span> <span style="color:#
 | WoW Version | Interface | Status |
 |-------------|-----------|--------|
 | **Retail Midnight** | `120007` | ✅ Fully Supported |
+| **WoW Forever Beta (1.60.1.69893)** | `120007` | ✅ Supported through Retail API capability checks |
 
 </div>
 
