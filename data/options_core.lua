@@ -21,7 +21,25 @@ function SQP:CreateOptionsPanel()
         return
     end
 
-    self.optionsPanel = UI:CreateOptionsPanel({
+    -- SQP brand green (#58be81) on this addon's UI only: RGXDesign is shared
+    -- across the suite, so scope the override to SQP's panel construction and
+    -- each lazily-rendered tab instead of mutating framework defaults.
+    local BrandTheme = { primary = { SQP.SECTION_COLOR.r or 0.345, SQP.SECTION_COLOR.g or 0.745, SQP.SECTION_COLOR.b or 0.506 } }
+    local Design = _G.RGXDesign
+    local function WithBrand(fn)
+        return function(...)
+            local args = { ... }
+            if Design and Design.WithTheme then
+                local result
+                Design:WithTheme(BrandTheme, function() result = fn(unpack(args)) end)
+                return result
+            end
+            return fn(...)
+        end
+    end
+
+    local function Build()
+        return UI:CreateOptionsPanel({
         addonName    = "SimpleQuestPlates",
         title        = "|cff58be81S|cffffffffimple |cff58be81Q|cffffffffuest |cff58be81P|cfffffffflates|cff58be81!|r",
         subtitle     = "Quest tracking overlay for enemy nameplates",
@@ -32,20 +50,27 @@ function SQP:CreateOptionsPanel()
         openInSettings = true,
         registerInSettings = true,
         bannerHeight = 88,
-        banner       = function(frame)
+        banner       = WithBrand(function(frame)
             SQP.previewFrame = SQP:CreatePreviewSection(frame)
-        end,
+        end),
         tabs = {
-            { text = "General", content = function(f) SQP:CreateGlobalOptions(f) end },
-            { text = "Kill",    content = function(f) SQP:CreateKillOptions(f) end,
+            { text = "General", content = WithBrand(function(f) SQP:CreateGlobalOptions(f) end) },
+            { text = "Kill",    content = WithBrand(function(f) SQP:CreateKillOptions(f) end),
               onSelect = function() if SQP.previewFrame then SQP.previewFrame.activateKillMode() end end },
-            { text = "Loot",   content = function(f) SQP:CreateLootOptions(f) end,
+            { text = "Loot",   content = WithBrand(function(f) SQP:CreateLootOptions(f) end),
               onSelect = function() if SQP.previewFrame then SQP.previewFrame.activateLootMode() end end },
-            { text = "Percent", content = function(f) SQP:CreatePercentOptions(f) end,
+            { text = "Percent", content = WithBrand(function(f) SQP:CreatePercentOptions(f) end),
               onSelect = function() if SQP.previewFrame then SQP.previewFrame.activatePercentMode() end end },
-            { text = "About",  content = function(f) SQP:CreateAboutSection(f) end },
+            { text = "About",  content = WithBrand(function(f) SQP:CreateAboutSection(f) end) },
         },
-    })
+        })
+    end
+
+    if Design and Design.WithTheme then
+        Design:WithTheme(BrandTheme, function() self.optionsPanel = Build() end)
+    else
+        self.optionsPanel = Build()
+    end
 
     return self.optionsPanel
 end
