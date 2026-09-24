@@ -21,10 +21,10 @@ function SQP:CreateOptionsPanel()
         return
     end
 
-    -- SQP brand green (#58be81) on this addon's UI only: RGXDesign is shared
-    -- across the suite, so scope the override to SQP's panel construction and
-    -- each lazily-rendered tab instead of mutating framework defaults.
-    local BrandTheme = { primary = { SQP.SECTION_COLOR.r or 0.345, SQP.SECTION_COLOR.g or 0.745, SQP.SECTION_COLOR.b or 0.506 } }
+    -- SQP brand green (#58be81) on this addon's UI only. Hardcoded: core.lua
+    -- also writes SQP.SECTION_COLOR ("RGX Blue") and load order decides who
+    -- survives, so do not read it at runtime.
+    local BrandTheme = { primary = { 0.345, 0.745, 0.506 } }
     local Design = _G.RGXDesign
     local function WithBrand(fn)
         return function(...)
