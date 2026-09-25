@@ -1,3 +1,9 @@
+# v2.1.7-beta.1 - 2026-09-25
+
+## Changes
+- New Unified nameplates option: quest overlays parent into Blizzard's own nameplate UnitFrame (move/scale/fade with the native plate). Off by default.
+- Fixed default alignment in non-unified mode: icons anchor to the health bar container; default Offset Y is now 0 (flush).
+
 # v2.1.6-beta.1 - 2026-09-25
 
 ## Changes
