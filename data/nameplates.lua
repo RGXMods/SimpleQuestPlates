@@ -70,20 +70,72 @@ SQP.ActiveNameplates = {} -- [plate] = frame (visible only)
 SQP.PlateGUIDs = {} -- [guid] = plate
 SQP.QuestPlates = {} -- [plate] = questFrame
 
+-- ── Unified nameplates ─────────────────────────────────────────────────────────
+-- When enabled, quest overlays are parented to Blizzard's own UnitFrame and
+-- anchored to its HealthBarsContainer (the technique MelloUI uses), so they
+-- move, scale and fade with the native nameplate instead of floating beside
+-- the plate boundary.
+
+function SQP:IsUnifiedMode(nameplate)
+    if SQPSettings.unifiedNameplates ~= true then
+        return false
+    end
+    if not nameplate or not nameplate.UnitFrame then
+        return false
+    end
+    if nameplate.UnitFrame.IsForbidden and nameplate.UnitFrame:IsForbidden() then
+        return false
+    end
+    return true
+end
+
+-- The frame quest icons anchor against. Both modes prefer Blizzard's health
+-- bar container so icons start flush with the bar by default (the outer
+-- plate boundary moves around with cast bars and buff space, which is why
+-- the old defaults never looked aligned). Older clients without those
+-- internals fall back to the outer plate.
+function SQP:GetPlateAnchorTarget(plate)
+    local uf = plate and plate.UnitFrame
+    if uf and not (uf.IsForbidden and uf:IsForbidden()) then
+        if uf.HealthBarsContainer then
+            return uf.HealthBarsContainer
+        end
+        if uf.healthBar then
+            return uf.healthBar
+        end
+    end
+    return plate
+end
+
 -- Create quest plate frame for new nameplates
 function SQP:CreateQuestPlate(nameplate)
     -- Check if nameplate already has quest frame to prevent duplicates
     if self.QuestPlates[nameplate] then
         return
     end
-    
+
     -- Store reference to nameplate frame
     self.Nameplates[nameplate] = nameplate
-    
-    -- Create quest overlay directly on nameplate
-    local questFrame = CreateFrame('frame', nil, nameplate)
+
+    local unified = self:IsUnifiedMode(nameplate)
+    local parent = unified and nameplate.UnitFrame or nameplate
+
+    -- Create quest overlay on the plate (or inside Blizzard's UnitFrame)
+    local questFrame = CreateFrame('frame', nil, parent)
     questFrame:Hide()
-    questFrame:SetAllPoints(nameplate)
+    questFrame:SetAllPoints(parent)
+    questFrame:EnableMouse(false)
+    if unified then
+        -- Draw above the health bar and its kit regions (gem caps etc.)
+        local hb = nameplate.UnitFrame.HealthBarsContainer
+            and nameplate.UnitFrame.HealthBarsContainer.healthBar
+        local ok, level = pcall(function()
+            return (hb or nameplate.UnitFrame):GetFrameLevel()
+        end)
+        if ok and type(level) == "number" then
+            questFrame:SetFrameLevel(level + 5)
+        end
+    end
     self.QuestPlates[nameplate] = questFrame
     
     -- Quest icon (jellybean)
@@ -93,9 +145,9 @@ function SQP:CreateQuestPlate(nameplate)
     icon:SetTexCoord(0.30273438, 0.41992188, 0.015625, 0.953125)
     icon:SetPoint(
         SQPSettings.anchor or 'RIGHT', 
-        nameplate, 
+        self:GetPlateAnchorTarget(nameplate),
         SQPSettings.relativeTo or 'LEFT', 
-        SQPSettings.offsetX or 0, 
+        SQPSettings.offsetX or 0,
         SQPSettings.offsetY or 0
     )
     questFrame.icon = icon
@@ -274,6 +326,41 @@ function SQP:CreateQuestPlate(nameplate)
     end)
 end
 
+-- Ensure a quest overlay exists for this plate and matches the current mode.
+-- In unified mode the UnitFrame can be replaced by Blizzard on plate reuse,
+-- so a cached overlay parented to a stale UnitFrame must be rebuilt.
+function SQP:EnsureQuestPlate(nameplate)
+    local questFrame = self.QuestPlates[nameplate]
+    if questFrame and SQPSettings.unifiedNameplates then
+        local expectedParent = nameplate.UnitFrame
+        if expectedParent and questFrame:GetParent() ~= expectedParent then
+            questFrame:Hide()
+            pcall(function() questFrame:SetParent(nil) end)
+            self.QuestPlates[nameplate] = nil
+        end
+    end
+    if not self.QuestPlates[nameplate] then
+        self:CreateQuestPlate(nameplate)
+    end
+end
+
+-- Rebuild every quest overlay after switching unified/legacy mode
+function SQP:RebuildQuestPlates()
+    local active = {}
+    for plate in pairs(self.ActiveNameplates) do
+        table.insert(active, plate)
+    end
+    for _, questFrame in pairs(self.QuestPlates) do
+        questFrame:Hide()
+        pcall(function() questFrame:SetParent(nil) end)
+    end
+    self.QuestPlates = {}
+    for _, plate in ipairs(active) do
+        self:CreateQuestPlate(plate)
+        self:UpdateQuestIcon(plate, plate._unitID)
+    end
+end
+
 -- Nameplate show callback
 function SQP:OnPlateShow(nameplate, unitID)
     local started = nowSeconds()
@@ -282,9 +369,7 @@ function SQP:OnPlateShow(nameplate, unitID)
     nameplate._unitID = unitID
     self.ActiveNameplates[nameplate] = nameplate
 
-    if not self.QuestPlates[nameplate] then
-        self:CreateQuestPlate(nameplate)
-    end
+    self:EnsureQuestPlate(nameplate)
     
     local ok, guid = pcall(UnitGUID, unitID)
     if ok and guid then
@@ -409,7 +494,7 @@ function SQP:RefreshAllNameplates()
             questFrame.icon:ClearAllPoints()
             questFrame.icon:SetPoint(
                 SQPSettings.anchor or 'RIGHT',
-                plate,
+                self:GetPlateAnchorTarget(plate),
                 SQPSettings.relativeTo or 'LEFT',
                 SQPSettings.offsetX or 0,
                 SQPSettings.offsetY or 0

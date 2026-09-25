@@ -354,6 +354,24 @@ function SQP:CreateGlobalOptions(content)
     posScaleLabel:SetText("|cff58be81Position & Scale|r")
     rightYOffset = rightYOffset - 14
 
+    -- Unified nameplates: parent quest overlays into Blizzard's own frames
+    local unifiedFrame = self:CreateStyledCheckbox(rightColumn, "Unified nameplates (attach to Blizzard frames)")
+    unifiedFrame:SetPoint("TOPLEFT", 20, rightYOffset)
+    unifiedFrame.checkbox:SetChecked(SQPSettings.unifiedNameplates == true)
+    self.optionControls.unifiedNameplates = unifiedFrame.checkbox
+    unifiedFrame.checkbox:SetScript("OnClick", function(self)
+        SQP:SetSetting('unifiedNameplates', self:GetChecked())
+        SQP:RebuildQuestPlates()
+    end)
+    rightYOffset = rightYOffset - 18
+
+    local unifiedHint = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    unifiedHint:SetPoint("TOPLEFT", 20, rightYOffset)
+    unifiedHint:SetWidth(250)
+    unifiedHint:SetJustifyH("LEFT")
+    unifiedHint:SetText("|cffaaaaaaQuest icons are parented into the Blizzard nameplate frame so they move, scale and fade with it.|r")
+    rightYOffset = rightYOffset - 30
+
 	-- Global Scale
 	local scaleSlider = self:CreateStyledSlider(rightColumn, {
 		key = "scale",
@@ -402,7 +420,7 @@ function SQP:CreateGlobalOptions(content)
 		min = -100,
 		max = 100,
 		step = 1,
-		default = 3,
+		default = 0,
 		storage = SQPSettings,
 		width = 160,
 		onChange = function(value)
