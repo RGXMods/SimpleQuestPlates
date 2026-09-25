@@ -1,4 +1,9 @@
-﻿# v2.1.5 - 2026-09-17
+# v2.1.6-beta.1 - 2026-09-25
+
+## Changes
+- Fixed options tab buttons not using the SQP brand green via the framework (requires RGX-Framework 2.7.8).
+
+# v2.1.5 - 2026-09-17
 
 ## Changes
 - Added WoW Forever Beta `1.60.1.69893` compatibility at Interface `120007`.
@@ -8,7 +13,7 @@
 # v2.1.4 - 2026-08-08
 
 ## Changes
-- **RGX-Framework DB migration**: `SQPSettings` → `RGX:NewDatabase("SQPSettings", ...)` with `profileIsGlobal = true`
+- **RGX-Framework DB migration**: `SQPSettings` ? `RGX:NewDatabase("SQPSettings", ...)` with `profileIsGlobal = true`
 - **Timer migration**: Replaced manual `C_Timer` throttling with `RGX:After` / `RGX:Every`
 - **Backward-compat**: `SQPSettings` global remains as proxy to `SQP.db.global`
 - Removed manual `C_Timer` fallback in nameplates (RGX-Framework is RequiredDeps)
@@ -34,7 +39,7 @@
 ## Changes
 
 - Migrated all sliders to the RGX Framework `UI:CreateSlider` with custom track-style design using RGX brand colors.
-- Removed per-slider manual label, reset button, and OnValueChanged boilerplate â€” the framework now handles all of this internally.
+- Removed per-slider manual label, reset button, and OnValueChanged boilerplate — the framework now handles all of this internally.
 - `SQP:CreateStyledSlider` now delegates to `UI:CreateSlider` when RGXUI is available, with fallback to the old Blizzard slider.
 - Sliders support click, drag, scroll wheel, and show value label on hover.
 - Net reduction of ~160 lines of manual slider setup code across all options files.
