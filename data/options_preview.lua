@@ -36,6 +36,11 @@ function SQP:CreatePreviewSection(parent)
     lootTypeBtn:SetPoint("LEFT", killTypeBtn, "RIGHT", 4, 0)
     pctTypeBtn:SetPoint("LEFT",  lootTypeBtn, "RIGHT", 4, 0)
 
+    -- Mode caption: shows which nameplate integration mode is active
+    local modeCaption = previewFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    modeCaption:SetPoint("TOPRIGHT", previewFrame, "TOPRIGHT", -10, -6)
+    previewFrame.modeCaption = modeCaption
+
     -- Create fake nameplate (geometry is synced to a live nameplate when available)
     local nameplate = CreateFrame("Frame", nil, previewFrame)
     nameplate:SetSize(112, 44)
@@ -358,13 +363,25 @@ function SQP:CreatePreviewSection(parent)
 
         icon:SetSize(28, 22)
         icon:ClearAllPoints()
+        -- Mirror the live anchor target: unified mode attaches flush to the
+        -- health bar (the preview analog of HealthBarsContainer); legacy
+        -- mode floats beside the outer plate boundary.
+        local anchorTarget = SQPSettings.unifiedNameplates and healthBar or nameplate
         icon:SetPoint(
             SQPSettings.anchor or 'RIGHT',
-            nameplate,
+            anchorTarget,
             SQPSettings.relativeTo or 'LEFT',
             SQPSettings.offsetX or 0,
             SQPSettings.offsetY or 0
         )
+
+        if self.modeCaption then
+            if SQPSettings.unifiedNameplates then
+                self.modeCaption:SetText("|cff58be81Mode: Unified (attached to Blizzard frames)|r")
+            else
+                self.modeCaption:SetText("|cff9a9a9aMode: Overlay (floating beside plate)|r")
+            end
+        end
 
         if self.killIcon then
             self.killIcon:ClearAllPoints()
