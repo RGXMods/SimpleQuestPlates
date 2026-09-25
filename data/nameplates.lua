@@ -143,13 +143,15 @@ function SQP:CreateQuestPlate(nameplate)
     icon:SetSize(28, 22)
     icon:SetTexture('Interface/QuestFrame/AutoQuest-Parts')
     icon:SetTexCoord(0.30273438, 0.41992188, 0.015625, 0.953125)
+    local anchorTarget = self:GetPlateAnchorTarget(nameplate)
     icon:SetPoint(
         SQPSettings.anchor or 'RIGHT', 
-        self:GetPlateAnchorTarget(nameplate),
+        anchorTarget, 
         SQPSettings.relativeTo or 'LEFT', 
         SQPSettings.offsetX or 0,
         SQPSettings.offsetY or 0
     )
+    questFrame._anchorTarget = anchorTarget
     questFrame.icon = icon
 
     -- Dramatic pulse for main quest icon (more noticeable)
@@ -342,6 +344,32 @@ function SQP:EnsureQuestPlate(nameplate)
     if not self.QuestPlates[nameplate] then
         self:CreateQuestPlate(nameplate)
     end
+
+    -- Re-anchor when Blizzard recycled the plate's internals (pool reuse,
+    -- death/resurrection, style swaps): the icon may still point at a stale
+    -- health bar container that no longer belongs to this plate.
+    self:RefreshQuestPlateAnchor(nameplate)
+end
+
+-- Re-anchor the quest icon when its anchor target frame was replaced
+function SQP:RefreshQuestPlateAnchor(nameplate)
+    local questFrame = self.QuestPlates[nameplate]
+    if not questFrame or not questFrame.icon then
+        return
+    end
+
+    local target = self:GetPlateAnchorTarget(nameplate)
+    if questFrame._anchorTarget ~= target then
+        questFrame.icon:ClearAllPoints()
+        questFrame.icon:SetPoint(
+            SQPSettings.anchor or 'RIGHT',
+            target,
+            SQPSettings.relativeTo or 'LEFT',
+            SQPSettings.offsetX or 0,
+            SQPSettings.offsetY or 0
+        )
+        questFrame._anchorTarget = target
+    end
 end
 
 -- Rebuild every quest overlay after switching unified/legacy mode
@@ -492,13 +520,15 @@ function SQP:RefreshAllNameplates()
             end
 
             questFrame.icon:ClearAllPoints()
+            local refreshTarget = self:GetPlateAnchorTarget(plate)
             questFrame.icon:SetPoint(
                 SQPSettings.anchor or 'RIGHT',
-                self:GetPlateAnchorTarget(plate),
+                refreshTarget,
                 SQPSettings.relativeTo or 'LEFT',
                 SQPSettings.offsetX or 0,
                 SQPSettings.offsetY or 0
             )
+            questFrame._anchorTarget = refreshTarget
             questFrame:SetScale(SQPSettings.scale or 1)
 
             if questFrame.killIcon then
