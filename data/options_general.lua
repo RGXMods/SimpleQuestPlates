@@ -291,6 +291,27 @@ function SQP:CreateGlobalOptions(content)
     end)
     yOffset = yOffset - 20
 
+    -- Unified nameplates: parent quest overlays into Blizzard's own frames
+    local unifiedFrame = self:CreateStyledCheckbox(leftColumn, "Unified nameplates")
+    unifiedFrame:SetPoint("TOPLEFT", 20, yOffset)
+    unifiedFrame.checkbox:SetChecked(SQPSettings.unifiedNameplates == true)
+    self.optionControls.unifiedNameplates = unifiedFrame.checkbox
+    unifiedFrame.checkbox:SetScript("OnClick", function(self)
+        SQP:SetSetting('unifiedNameplates', self:GetChecked())
+        SQP:RebuildQuestPlates()
+        if SQP.previewFrame and type(SQP.previewFrame.UpdatePreview) == "function" then
+            SQP.previewFrame:UpdatePreview()
+        end
+    end)
+    yOffset = yOffset - 18
+
+    local unifiedHint = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    unifiedHint:SetPoint("TOPLEFT", 20, yOffset)
+    unifiedHint:SetWidth(250)
+    unifiedHint:SetJustifyH("LEFT")
+    unifiedHint:SetText("|cffaaaaaaAttach quest icons into the Blizzard nameplate frames (see preview).|r")
+    yOffset = yOffset - 30
+
     local minimapSection = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     minimapSection:SetPoint("TOPLEFT", 20, yOffset)
     minimapSection:SetText("|cff58be81Minimap Icon|r")
@@ -353,24 +374,6 @@ function SQP:CreateGlobalOptions(content)
     posScaleLabel:SetPoint("TOPLEFT", 20, rightYOffset)
     posScaleLabel:SetText("|cff58be81Position & Scale|r")
     rightYOffset = rightYOffset - 14
-
-    -- Unified nameplates: parent quest overlays into Blizzard's own frames
-    local unifiedFrame = self:CreateStyledCheckbox(rightColumn, "Unified nameplates (attach to Blizzard frames)")
-    unifiedFrame:SetPoint("TOPLEFT", 20, rightYOffset)
-    unifiedFrame.checkbox:SetChecked(SQPSettings.unifiedNameplates == true)
-    self.optionControls.unifiedNameplates = unifiedFrame.checkbox
-    unifiedFrame.checkbox:SetScript("OnClick", function(self)
-        SQP:SetSetting('unifiedNameplates', self:GetChecked())
-        SQP:RebuildQuestPlates()
-    end)
-    rightYOffset = rightYOffset - 18
-
-    local unifiedHint = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    unifiedHint:SetPoint("TOPLEFT", 20, rightYOffset)
-    unifiedHint:SetWidth(250)
-    unifiedHint:SetJustifyH("LEFT")
-    unifiedHint:SetText("|cffaaaaaaQuest icons are parented into the Blizzard nameplate frame so they move, scale and fade with it.|r")
-    rightYOffset = rightYOffset - 30
 
 	-- Global Scale
 	local scaleSlider = self:CreateStyledSlider(rightColumn, {
