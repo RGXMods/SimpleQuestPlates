@@ -41,6 +41,7 @@ function SQP:CreateOptionsPanel()
     local function Build()
         return UI:CreateOptionsPanel({
         addonName    = "SimpleQuestPlates",
+        theme        = BrandTheme,
         title        = "|cff58be81S|cffffffffimple |cff58be81Q|cffffffffuest |cff58be81P|cfffffffflates|cff58be81!|r",
         subtitle     = "Quest tracking overlay for enemy nameplates",
         author       = SQP.AUTHOR or "DonnieDice",
