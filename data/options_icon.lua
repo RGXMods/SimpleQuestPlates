@@ -13,10 +13,11 @@ function SQP:CreateIconOptions(content)
 
     local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 300, 20)
 
-    -- ── LEFT COLUMN: Position ────────────────────────────────────────────────
+    -- â”€â”€ LEFT COLUMN: Position â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local yOffset = -15
 
     local posLabel = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    SQP:ApplyDefaultFont(posLabel)
     posLabel:SetPoint("TOPLEFT", 20, yOffset)
     posLabel:SetText("|cff58be81" .. (self.L["OPTIONS_ICON_POSITION"] or "Icon Position") .. "|r")
     yOffset = yOffset - 22
@@ -61,6 +62,7 @@ function SQP:CreateIconOptions(content)
 
     -- Nameplate side
     local anchorLabel = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    SQP:ApplyDefaultFont(anchorLabel)
     anchorLabel:SetPoint("TOPLEFT", 20, yOffset)
     anchorLabel:SetText(self.L["OPTIONS_ANCHOR"] or "Nameplate Side")
     yOffset = yOffset - 22
@@ -99,10 +101,11 @@ function SQP:CreateIconOptions(content)
     end)
     anchorReset:SetPoint("LEFT", rightBtn, "RIGHT", 6, 0)
 
-    -- ── RIGHT COLUMN: Scale + Display Style ──────────────────────────────────
+    -- â”€â”€ RIGHT COLUMN: Scale + Display Style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local rightYOffset = -15
 
     local styleLabel = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    SQP:ApplyDefaultFont(styleLabel)
     styleLabel:SetPoint("TOPLEFT", 20, rightYOffset)
     styleLabel:SetText("|cff58be81" .. (self.L["OPTIONS_ICON_STYLE"] or "Icon Style") .. "|r")
     rightYOffset = rightYOffset - 22
@@ -126,13 +129,14 @@ function SQP:CreateIconOptions(content)
 
 	rightYOffset = rightYOffset - 48
 
-    -- Quest Marker (animated "?" when the quest frame shows)
+    -- Toast Animation (the "?" pop when the quest frame shows)
     local markerHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     markerHeader:SetPoint("TOPLEFT", 20, rightYOffset)
-    markerHeader:SetText("|cff58be81Quest Marker|r")
+    markerHeader:SetText("|cff58be81Toast Animation|r")
+    SQP:ApplyDefaultFont(markerHeader)
     rightYOffset = rightYOffset - 20
 
-    local markerFrame = self:CreateStyledCheckbox(rightColumn, "Show quest marker animation")
+    local markerFrame = self:CreateStyledCheckbox(rightColumn, "Show toast animation")
     markerFrame:SetPoint("TOPLEFT", 20, rightYOffset)
     markerFrame.checkbox:SetChecked(SQPSettings.showQuestMarker ~= false)
     self.optionControls.showQuestMarker = markerFrame.checkbox
@@ -143,7 +147,7 @@ function SQP:CreateIconOptions(content)
 
 	local markerSizeSlider = self:CreateStyledSlider(rightColumn, {
 		key = "questMarkerSize",
-		label = "Marker Size",
+		label = "Toast Size",
 		min = 10,
 		max = 48,
 		step = 1,

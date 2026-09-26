@@ -12,7 +12,7 @@ function SQP:CreateLootOptions(content)
 
     local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
-    -- ── Slider helper ─────────────────────────────────────────────────────────
+    -- â”€â”€ Slider helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
         local slider = SQP:CreateStyledSlider(parent, {
             key = key,
@@ -42,10 +42,11 @@ function SQP:CreateLootOptions(content)
         end
     end
 
-    -- ── LEFT COLUMN ────────────────────────────────────────────────────────────
+    -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local yOffset = -15
 
     local header = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(header)
     header:SetPoint("TOPLEFT", 20, yOffset)
     header:SetText("|cff58be81Loot Icon|r")
     yOffset = yOffset - 16
@@ -67,6 +68,7 @@ function SQP:CreateLootOptions(content)
 
     -- Animate Task Icons
     local animHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(animHeader)
     animHeader:SetPoint("TOPLEFT", 20, yOffset)
     animHeader:SetText("|cff58be81Animate|r")
     yOffset = yOffset - 16
@@ -121,6 +123,7 @@ function SQP:CreateLootOptions(content)
 
     -- Loot Color
     local colorHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(colorHeader)
     colorHeader:SetPoint("TOPLEFT", 20, yOffset)
     colorHeader:SetText("|cff58be81Color|r")
     yOffset = yOffset - 16
@@ -137,6 +140,7 @@ function SQP:CreateLootOptions(content)
     SQP.optionControls.lootColorSwatch = sw
 
     local colorLbl = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(colorLbl)
     colorLbl:SetPoint("LEFT", colorBtn, "RIGHT", 6, 0)
     colorLbl:SetText("Loot Color")
 
@@ -166,10 +170,11 @@ function SQP:CreateLootOptions(content)
     -- Loot Icon Tinting (mini icon, compact inline row)
     yOffset = self:CreateMiniIconTintSection(leftColumn, "loot", ActivateLoot, yOffset)
 
-    -- ── RIGHT COLUMN ──────────────────────────────────────────────────────────
+    -- â”€â”€ RIGHT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local rightYOffset = -15
 
     local posHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(posHeader)
     posHeader:SetPoint("TOPLEFT", 20, rightYOffset)
     posHeader:SetText("|cff58be81Size & Position|r")
     rightYOffset = rightYOffset - 16
