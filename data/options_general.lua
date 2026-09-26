@@ -150,18 +150,6 @@ function SQP:CreateGlobalOptions(content)
     end
     yOffset = yOffset - 30
 
-    local glowFrame = self:CreateStyledCheckbox(leftColumn, "Quest display glow")
-    glowFrame:SetPoint("TOPLEFT", 20, yOffset)
-    glowFrame.checkbox:SetChecked(SQPSettings.showQuestGlow ~= false)
-    self.optionControls.showQuestGlow = glowFrame.checkbox
-    glowFrame.checkbox:SetScript("OnClick", function(self)
-        SQP:SetSetting('showQuestGlow', self:GetChecked())
-        SQP:RefreshAllNameplates()
-        if SQP.previewFrame and type(SQP.previewFrame.UpdatePreview) == "function" then
-            SQP.previewFrame:UpdatePreview()
-        end
-    end)
-    yOffset = yOffset - 18
 
     local syncFrame = self:CreateStyledCheckbox(leftColumn, "Sync icon animations")
     syncFrame:SetPoint("TOPLEFT", 20, yOffset)
