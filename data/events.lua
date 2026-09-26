@@ -77,6 +77,13 @@ function SQP:NAME_PLATE_UNIT_REMOVED(unitID)
 end
 
 -- Target/mouseover updates (helps tooltip-driven detection on Classic)
+-- Re-apply the target-glow suppression after Blizzard re-evaluates it
+local function ApplyTargetGlowDeferred()
+    if SQPSettings and SQPSettings.showTargetGlow == false then
+        RGX:After(0, function() SQP:ApplyTargetGlowAll() end)
+    end
+end
+
 function SQP:PLAYER_TARGET_CHANGED()
     if UnitExists("target") then
         local plate = SQP.Compat.GetNamePlateForUnit and SQP.Compat.GetNamePlateForUnit("target")
@@ -85,6 +92,7 @@ function SQP:PLAYER_TARGET_CHANGED()
             self:UpdateQuestIcon(plate, "target")
         end
     end
+    ApplyTargetGlowDeferred()
 end
 
 function SQP:UPDATE_MOUSEOVER_UNIT()

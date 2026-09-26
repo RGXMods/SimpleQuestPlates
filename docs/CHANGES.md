@@ -1,10 +1,11 @@
 # v2.1.7-beta.1 - 2026-09-25
 
 ## Changes
-- New Unified nameplates option: quest overlays parent into Blizzard's own nameplate UnitFrame (move/scale/fade with the native plate). Off by default.
-- Fixed default alignment in non-unified mode: icons anchor to the health bar container; default Offset Y is now 0 (flush).
-- New Quest Marker animation toggle + size slider (Icon tab) and Percent Sign Side selector (Percent tab).
-- Fonts default to the RGX framework font (Inter-Regular) and inherit globally; legacy Friz Quadrata defaults are migrated.
+- New Unified nameplates option: quest overlays attach into Blizzard's own nameplate UnitFrame with a native level-style count chip. Off by default.
+- Fixed default alignment in non-unified mode (health-bar anchoring, Offset Y 0); icons re-anchor after Blizzard recycles plates (death/rez).
+- Fonts default to the RGX framework font and inherit globally; legacy defaults migrate automatically.
+- New options: Quest Marker toggle + size (Icon tab), target glow toggle (General), percent sign side (Percent), kill/loot icon side (Kill/Loot).
+- Options pages use the framework's centered two-column layout.
 
 # v2.1.6-beta.1 - 2026-09-25
 
@@ -47,7 +48,7 @@
 ## Changes
 
 - Migrated all sliders to the RGX Framework `UI:CreateSlider` with custom track-style design using RGX brand colors.
-- Removed per-slider manual label, reset button, and OnValueChanged boilerplate â€” the framework now handles all of this internally.
+- Removed per-slider manual label, reset button, and OnValueChanged boilerplate — the framework now handles all of this internally.
 - `SQP:CreateStyledSlider` now delegates to `UI:CreateSlider` when RGXUI is available, with fallback to the old Blizzard slider.
 - Sliders support click, drag, scroll wheel, and show value label on hover.
 - Net reduction of ~160 lines of manual slider setup code across all options files.
@@ -69,3 +70,4 @@
 - Fixed Reset Percent Settings button width and horizontal placement.
 - Removed unintended tab text repositioning/layout changes from the options panel.
 - Verified touched SQP Lua files pass syntax validation.
+.ToString().TrimStart()

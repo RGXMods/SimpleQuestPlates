@@ -83,12 +83,70 @@ function SQP:AnchorPercentSign(percentIcon, icon, textMode)
     local side = SQPSettings.percentSignSide or "right"
     if side == "left" then
         percentIcon:SetPoint('CENTER', icon, -offX, offY)
-    elseif side == "badgeLeft" then
-        percentIcon:SetPoint('TOPRIGHT', icon, 'BOTTOMLEFT', offX - 6, offY + 12)
-    elseif side == "badgeRight" then
-        percentIcon:SetPoint('TOPLEFT', icon, 'BOTTOMRIGHT', -(offX - 6), offY + 12)
     else
         percentIcon:SetPoint('CENTER', icon, offX, offY)
+    end
+end
+
+-- Position the kill/loot task icons relative to the main quest icon.
+-- Side flips the badge between the lower-left and lower-right slots; the
+-- per-type X/Y offsets fine-tune from there.
+function SQP:AnchorTaskIcon(iconTex, icon, typeKey)
+    if not iconTex or not icon then return end
+    local x = SQPSettings[typeKey .. "IconOffsetX"]
+    if x == nil then x = (typeKey == "loot") and -38 or 2 end
+    local y = SQPSettings[typeKey .. "IconOffsetY"]
+    if y == nil then y = (typeKey == "loot") and 16 or 15 end
+    local side = SQPSettings[typeKey .. "IconSide"]
+    if side == nil then side = (typeKey == "kill") and "left" or "right" end
+    iconTex:ClearAllPoints()
+    if side == "left" then
+        iconTex:SetPoint('TOPRIGHT', icon, 'BOTTOMLEFT', x, y)
+    else
+        iconTex:SetPoint('TOPLEFT', icon, 'BOTTOMRIGHT', x, y)
+    end
+end
+
+-- Unified mode shows the count in a native level-display style chip (dark
+-- backdrop box hugging the number) instead of the floating jellybean. The
+-- chip resizes to fit the current text on every update.
+function SQP:UpdateUnifiedChip(questFrame)
+    local chip = questFrame and questFrame.levelChip
+    if not chip then
+        return
+    end
+    local iconText = questFrame.iconText
+    if not iconText or not iconText.IsShown or not iconText:IsShown() then
+        chip:Hide()
+        return
+    end
+    local text = iconText:GetText()
+    if not text or text == "" then
+        chip:Hide()
+        return
+    end
+    chip:ClearAllPoints()
+    chip:SetPoint("CENTER", iconText, "CENTER", 0, 0)
+    local w = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
+    local _, h = iconText:GetFont()
+    chip:SetSize(w + 10, (h or 12) + 8)
+    chip:SetColorTexture(0, 0, 0, 0.55)
+    chip:Show()
+end
+
+-- Suppress Blizzard's selection highlight on nameplates when disabled
+function SQP:ApplyTargetGlow(nameplate)
+    local uf = nameplate and nameplate.UnitFrame
+    local sh = uf and uf.selectionHighlight
+    if not sh then return end
+    if SQPSettings.showTargetGlow == false then
+        sh:Hide()
+    end
+end
+
+function SQP:ApplyTargetGlowAll()
+    for plate in pairs(self.ActiveNameplates) do
+        self:ApplyTargetGlow(plate)
     end
 end
 
@@ -163,6 +221,13 @@ function SQP:CreateQuestPlate(nameplate)
         if ok and type(level) == "number" then
             questFrame:SetFrameLevel(level + 5)
         end
+
+        -- Level-display style chip behind the count text (the unified look:
+        -- a dark backdrop hugging the number, like Blizzard's unit level).
+        local chip = questFrame:CreateTexture(nil, "OVERLAY", nil, 0)
+        chip:SetColorTexture(0, 0, 0, 0.55)
+        chip:Hide()
+        questFrame.levelChip = chip
     end
     self.QuestPlates[nameplate] = questFrame
     
@@ -237,13 +302,7 @@ function SQP:CreateQuestPlate(nameplate)
 
     -- Kill quest icon (hostile cursor knife/sword)
     local killIcon = questFrame:CreateTexture(nil, "OVERLAY", nil, 1)
-    killIcon:SetPoint(
-        'TOPRIGHT',
-        icon,
-        'BOTTOMLEFT',
-        SQPSettings.killIconOffsetX or 12,
-        SQPSettings.killIconOffsetY or 12
-    )
+    self:AnchorTaskIcon(killIcon, icon, "kill")
     killIcon:SetSize(SQPSettings.killIconSize or 16, SQPSettings.killIconSize or 16)
     killIcon:SetTexture('Interface/Cursor/Attack')
     if not killIcon:GetTexture() then
@@ -263,13 +322,7 @@ function SQP:CreateQuestPlate(nameplate)
         lootIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     end
     lootIcon:SetSize(SQPSettings.lootIconSize or 16, SQPSettings.lootIconSize or 16)
-    lootIcon:SetPoint(
-        'TOPLEFT',
-        icon,
-        'BOTTOMRIGHT',
-        SQPSettings.lootIconOffsetX or -12,
-        SQPSettings.lootIconOffsetY or 12
-    )
+    self:AnchorTaskIcon(lootIcon, icon, "loot")
     lootIcon:Hide()
     questFrame.lootIcon = lootIcon
     questFrame.lootIconPulse = CreatePulse(lootIcon)
@@ -439,6 +492,11 @@ function SQP:OnPlateShow(nameplate, unitID)
 
     self:UpdateQuestIcon(nameplate, unitID)
 
+    -- Targeting a fresh plate shows Blizzard's selection highlight again
+    if SQPSettings.showTargetGlow == false then
+        RGX:After(0, function() self:ApplyTargetGlow(nameplate) end, "SQP target glow")
+    end
+
     -- Recheck shortly after show to allow tooltip data to populate
     local plateRef = nameplate
     local unitRef = unitID
@@ -572,25 +630,11 @@ function SQP:RefreshAllNameplates()
             end
 
             if questFrame.killIcon then
-                questFrame.killIcon:ClearAllPoints()
-                questFrame.killIcon:SetPoint(
-                    'TOPRIGHT',
-                    questFrame.icon,
-                    'BOTTOMLEFT',
-                    SQPSettings.killIconOffsetX or 12,
-                    SQPSettings.killIconOffsetY or 12
-                )
+                self:AnchorTaskIcon(questFrame.killIcon, questFrame.icon, "kill")
                 questFrame.killIcon:SetSize(SQPSettings.killIconSize or 16, SQPSettings.killIconSize or 16)
             end
             if questFrame.lootIcon then
-                questFrame.lootIcon:ClearAllPoints()
-                questFrame.lootIcon:SetPoint(
-                    'TOPLEFT',
-                    questFrame.icon,
-                    'BOTTOMRIGHT',
-                    SQPSettings.lootIconOffsetX or -12,
-                    SQPSettings.lootIconOffsetY or 12
-                )
+                self:AnchorTaskIcon(questFrame.lootIcon, questFrame.icon, "loot")
                 questFrame.lootIcon:SetSize(SQPSettings.lootIconSize or 16, SQPSettings.lootIconSize or 16)
             end
             

@@ -10,15 +10,7 @@ local addonName, SQP = ...
 function SQP:CreateKillOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(288)
-
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 14, 0)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
     -- ── Slider helper ─────────────────────────────────────────────────────────
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
@@ -186,6 +178,8 @@ function SQP:CreateKillOptions(content)
     rightYOffset = MakeSlider(rightColumn, "Offset X", "killIconOffsetX",  2, -80,  80, rightYOffset)
     rightYOffset = MakeSlider(rightColumn, "Offset Y", "killIconOffsetY", 15, -80,  80, rightYOffset)
 
+    rightYOffset = self:CreateIconSideSection(rightColumn, "kill", ActivateKill, rightYOffset)
+
     -- Reset this tab to kill defaults
     rightYOffset = rightYOffset - 14
     local resetBtn = self:CreateStyledButton(rightColumn, "Reset Kill Settings", 150, 22)
@@ -203,6 +197,8 @@ function SQP:CreateKillOptions(content)
         SQP:SetSetting('killTintIconColor', {unpack(D.killTintIconColor)})
         SQP:SetSetting('killFontSize',      D.killFontSize)
         SQP:SetSetting('killFontFamily',    D.killFontFamily)
+        SQP:SetSetting('killIconSide',      D.killIconSide)
+        if oc.killIconSideSideUpdater then oc.killIconSideSideUpdater() end
         -- Update checkboxes
         if oc.showKillIcon      then oc.showKillIcon:SetChecked(D.showKillIcon) end
         if oc.killShowIconBackgroundStyleUpdater then oc.killShowIconBackgroundStyleUpdater() end

@@ -11,15 +11,7 @@ local format = string.format
 function SQP:CreateIconOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(300)
-
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 20, 0)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 300, 20)
 
     -- ── LEFT COLUMN: Position ────────────────────────────────────────────────
     local yOffset = -15
