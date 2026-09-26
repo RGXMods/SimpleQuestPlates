@@ -495,24 +495,20 @@ function SQP:CreatePreviewSection(parent)
             if self.killIcon  then self.killIcon:Hide()  end
 
             if SQPSettings.showPercentIcon ~= false then
-                local pOffX = SQPSettings.percentIconOffsetX or 18
-                local pOffY = SQPSettings.percentIconOffsetY or 0
                 local pOW   = SQP:GetOutlineInfo("percent")
                 if percentIconMode then
-                    -- Icon mode: jellybean + number + "%" at offset
+                    -- Icon mode: jellybean + number + "%" at configured side
                     icon:Show()
                     self.iconText:SetText("75")
                     if self.iconTextOutline then self.iconTextOutline:SetText("75") end
                     if self.percentIcon then
-                        self.percentIcon:ClearAllPoints()
-                        self.percentIcon:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIcon, icon, false)
                         self.percentIcon:SetText("%")
                         SetPreviewPercentColor(self.percentIcon)
                         self.percentIcon:Show()
                     end
                     if self.percentIconOutline then
-                        self.percentIconOutline:ClearAllPoints()
-                        self.percentIconOutline:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIconOutline, icon, false)
                         self.percentIconOutline:SetText("%")
                         if pOW > 0 then self.percentIconOutline:Show() else self.percentIconOutline:Hide() end
                     end
@@ -522,15 +518,13 @@ function SQP:CreatePreviewSection(parent)
                     self.iconText:SetText("")
                     if self.iconTextOutline then self.iconTextOutline:SetText("") end
                     if self.percentIcon then
-                        self.percentIcon:ClearAllPoints()
-                        self.percentIcon:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIcon, icon, true)
                         self.percentIcon:SetText("75%")
                         SetPreviewPercentColor(self.percentIcon)
                         self.percentIcon:Show()
                     end
                     if self.percentIconOutline then
-                        self.percentIconOutline:ClearAllPoints()
-                        self.percentIconOutline:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIconOutline, icon, true)
                         self.percentIconOutline:SetText("75%")
                         if pOW > 0 then self.percentIconOutline:Show() else self.percentIconOutline:Hide() end
                     end

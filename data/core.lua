@@ -145,6 +145,9 @@ SQP.DEFAULTS = {
     -- Per-type fonts (kill/loot/percent) inherit the global font settings by
     -- default; per-type keys only exist once a user overrides them on the
     -- Kill / Loot / Percent tabs.
+    showQuestMarker = true,          -- Animated quest marker on plate show
+    questMarkerSize = 28,
+    percentSignSide = "right",       -- right | left | badgeLeft | badgeRight
     animateQuestIcon = false,
     animateQuestIcons = true,
     useGlobalAnimationSettings = false,
