@@ -10,7 +10,7 @@ local addonName, SQP = ...
 function SQP:CreateLootOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
     -- â”€â”€ Slider helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
@@ -43,7 +43,7 @@ function SQP:CreateLootOptions(content)
     end
 
     -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local yOffset = -15
+    local yOffset = -12
 
     local header = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     SQP:ApplyDefaultFont(header)
@@ -171,7 +171,7 @@ function SQP:CreateLootOptions(content)
     yOffset = self:CreateMiniIconTintSection(leftColumn, "loot", ActivateLoot, yOffset)
 
     -- â”€â”€ RIGHT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local rightYOffset = -15
+    local rightYOffset = -12
 
     local posHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     SQP:ApplyDefaultFont(posHeader)

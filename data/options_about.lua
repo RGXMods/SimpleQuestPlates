@@ -8,10 +8,10 @@
 local addonName, SQP = ...
 
 function SQP:CreateAboutSection(content)
-    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
     -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local yOffset = -15
+    local yOffset = -12
 
     -- Title
     local aboutTitle = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -75,7 +75,7 @@ function SQP:CreateAboutSection(content)
     discordLink:SetText("|cffffffdadiscord.gg/N7kdKAHVVF|r")
 
     -- â”€â”€ RIGHT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local rightYOffset = -15
+    local rightYOffset = -12
 
     -- Slash Commands box
     local cmdFrame = CreateFrame("Frame", nil, rightColumn, "BackdropTemplate")

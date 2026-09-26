@@ -11,10 +11,10 @@ local format = string.format
 function SQP:CreateIconOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 300, 20)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
     -- â”€â”€ LEFT COLUMN: Position â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local yOffset = -15
+    local yOffset = -12
 
     local posLabel = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(posLabel)
@@ -102,7 +102,7 @@ function SQP:CreateIconOptions(content)
     anchorReset:SetPoint("LEFT", rightBtn, "RIGHT", 6, 0)
 
     -- â”€â”€ RIGHT COLUMN: Scale + Display Style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local rightYOffset = -15
+    local rightYOffset = -12
 
     local styleLabel = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(styleLabel)

@@ -37,7 +37,7 @@ function SQP:CreateGlobalOptions(content)
     local rgxFonts = _G.RGXFonts
 
 
-    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
     -- â”€â”€ LEFT COLUMN: Addon state + toggles + combat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local yOffset = -12
@@ -52,7 +52,7 @@ function SQP:CreateGlobalOptions(content)
     local UI = _G.RGXUI
     if UI and type(UI.CreateSwitch) == "function" then
         local addonSwitch = UI:CreateSwitch(leftColumn, {
-            label    = self.L["OPTIONS_ADDON_STATE"] or "Addon State",
+            label    = "",
             key      = "enabled",
             storage  = SQPSettings,
             default  = true,
@@ -61,7 +61,7 @@ function SQP:CreateGlobalOptions(content)
                 SQP:RefreshAllNameplates()
             end,
         })
-        addonSwitch:SetWidth(288)
+        addonSwitch:SetWidth(200)
         addonSwitch:SetPoint("TOPLEFT", 20, yOffset)
         self.optionControls.addonStateSwitch = addonSwitch
         yOffset = yOffset - 26
@@ -120,41 +120,58 @@ function SQP:CreateGlobalOptions(content)
     end)
     yOffset = yOffset - 20
 
-    -- Unified nameplates: parent quest overlays into Blizzard's own frames
-    local unifiedFrame = self:CreateStyledCheckbox(leftColumn, "Unified nameplates")
-    unifiedFrame:SetPoint("TOPLEFT", 20, yOffset)
-    unifiedFrame.checkbox:SetChecked(SQPSettings.unifiedNameplates == true)
-    self.optionControls.unifiedNameplates = unifiedFrame.checkbox
-    unifiedFrame.checkbox:SetScript("OnClick", function(self)
-        SQP:SetSetting('unifiedNameplates', self:GetChecked())
-        SQP:RebuildQuestPlates()
+    -- Quest Display: background texture selector (framework dropdown)
+    local unifyHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    unifyHeader:SetPoint("TOPLEFT", 20, yOffset)
+    unifyHeader:SetText("|cff58be81Quest Display|r")
+    SQP:ApplyDefaultFont(unifyHeader)
+    yOffset = yOffset - 16
+
+    local Drops = _G.RGXDropdowns
+    if Drops and type(Drops.CreateNestedDropdown) == "function" then
+        local dd = Drops:CreateNestedDropdown(leftColumn, {
+            label = "Background style",
+            width = 220,
+            value = (SQPSettings.unifiedNameplates == true),
+            items = {
+                { text = "Floating icon (default)", value = false },
+                { text = "Level chip (native)",     value = true  },
+            },
+            onChange = function(value)
+                SQP:SetSetting('unifiedNameplates', value == true)
+                SQP:RebuildQuestPlates()
+                if SQP.previewFrame and type(SQP.previewFrame.UpdatePreview) == "function" then
+                    SQP.previewFrame:UpdatePreview()
+                end
+            end,
+        })
+        SQP:SetControlTooltip(dd, "Pick the quest display background. Level chip renders the count in a native level-style backdrop on the nameplate.")
+        self.optionControls.unifiedDropdown = dd
+    end
+    yOffset = yOffset - 30
+
+    local glowFrame = self:CreateStyledCheckbox(leftColumn, "Quest display glow")
+    glowFrame:SetPoint("TOPLEFT", 20, yOffset)
+    glowFrame.checkbox:SetChecked(SQPSettings.showQuestGlow ~= false)
+    self.optionControls.showQuestGlow = glowFrame.checkbox
+    glowFrame.checkbox:SetScript("OnClick", function(self)
+        SQP:SetSetting('showQuestGlow', self:GetChecked())
+        SQP:RefreshAllNameplates()
         if SQP.previewFrame and type(SQP.previewFrame.UpdatePreview) == "function" then
             SQP.previewFrame:UpdatePreview()
         end
     end)
     yOffset = yOffset - 18
 
-    local unifiedHint = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    SQP:ApplyDefaultFont(unifiedHint)
-    unifiedHint:SetPoint("TOPLEFT", 20, yOffset)
-    unifiedHint:SetWidth(250)
-    unifiedHint:SetJustifyH("LEFT")
-    unifiedHint:SetText("|cffaaaaaaShow quest counts in a Blizzard level-style chip instead of the floating icon (see preview).|r")
-    yOffset = yOffset - 30
-
-    local glowFrame = self:CreateStyledCheckbox(leftColumn, "Show target nameplate glow")
-    glowFrame:SetPoint("TOPLEFT", 20, yOffset)
-    glowFrame.checkbox:SetChecked(SQPSettings.showTargetGlow ~= false)
-    self.optionControls.showTargetGlow = glowFrame.checkbox
-    glowFrame.checkbox:SetScript("OnClick", function(self)
-        SQP:SetSetting('showTargetGlow', self:GetChecked())
-        if self:GetChecked() == false then
-            SQP:ApplyTargetGlowAll()
-        end
-        if SQP.previewFrame and type(SQP.previewFrame.UpdatePreview) == "function" then
-            SQP.previewFrame:UpdatePreview()
-        end
+    local syncFrame = self:CreateStyledCheckbox(leftColumn, "Sync icon animations")
+    syncFrame:SetPoint("TOPLEFT", 20, yOffset)
+    syncFrame.checkbox:SetChecked(SQPSettings.syncAnimations == true)
+    self.optionControls.syncAnimations = syncFrame.checkbox
+    syncFrame.checkbox:SetScript("OnClick", function(self)
+        SQP:SetSetting('syncAnimations', self:GetChecked())
+        SQP:RefreshAllNameplates()
     end)
+    SQP:SetControlTooltip(syncFrame, "Play the main, kill, loot and percent pulses in phase.")
     yOffset = yOffset - 20
 
     local minimapSection = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
@@ -170,15 +187,8 @@ function SQP:CreateGlobalOptions(content)
     minimapFrame.checkbox:SetScript("OnClick", function(self)
         SQP:ToggleMinimapIcon(self:GetChecked())
     end)
-    yOffset = yOffset - 20
-
-    local minimapHint = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
-    SQP:ApplyDefaultFont(minimapHint)
-    minimapHint:SetPoint("TOPLEFT", 20, yOffset)
-    minimapHint:SetWidth(250)
-    minimapHint:SetJustifyH("LEFT")
-    minimapHint:SetText("|cffaaaaaaLeft-click opens options. Drag to move. Ctrl-right-click hides it.|r")
-    yOffset = yOffset - 32
+    SQP:SetControlTooltip(minimapFrame, "Left-click opens options. Drag to move. Ctrl-right-click hides it.")
+    yOffset = yOffset - 24
 
     -- Global Animation Override
     -- Combat Settings
