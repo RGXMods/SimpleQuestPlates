@@ -218,15 +218,7 @@ function SQP:CreateGlobalOptions(content)
         return y - 30
     end
 
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(288)
-
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 14, 0)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
     -- ── LEFT COLUMN: Addon state + toggles + combat ────────────────────────────
     local yOffset = -12
@@ -305,6 +297,18 @@ function SQP:CreateGlobalOptions(content)
     unifiedHint:SetJustifyH("LEFT")
     unifiedHint:SetText("|cffaaaaaaAttach quest icons into the Blizzard nameplate frames (see preview).|r")
     yOffset = yOffset - 30
+
+    local glowFrame = self:CreateStyledCheckbox(leftColumn, "Show target nameplate glow")
+    glowFrame:SetPoint("TOPLEFT", 20, yOffset)
+    glowFrame.checkbox:SetChecked(SQPSettings.showTargetGlow ~= false)
+    self.optionControls.showTargetGlow = glowFrame.checkbox
+    glowFrame.checkbox:SetScript("OnClick", function(self)
+        SQP:SetSetting('showTargetGlow', self:GetChecked())
+        if self:GetChecked() == false then
+            SQP:ApplyTargetGlowAll()
+        end
+    end)
+    yOffset = yOffset - 20
 
     local minimapSection = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     minimapSection:SetPoint("TOPLEFT", 20, yOffset)

@@ -10,15 +10,7 @@ local addonName, SQP = ...
 function SQP:CreatePercentOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(288)
-
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 14, 0)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
     -- ── Slider helper ─────────────────────────────────────────────────────────
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
@@ -77,10 +69,8 @@ function SQP:CreatePercentOptions(content)
     yOffset = yOffset - 16
 
     local sideOptions = {
-        { label = "Right",     value = "right"      },
-        { label = "Left",      value = "left"       },
-        { label = "Lower L",   value = "badgeLeft"  },
-        { label = "Lower R",   value = "badgeRight" },
+        { label = "Left",  value = "left"  },
+        { label = "Right", value = "right" },
     }
     local sideButtons = {}
     local prevBtn

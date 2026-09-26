@@ -388,6 +388,13 @@ function SQP:CreateStyledCheckbox(parent, text)
     checkbox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
 
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    do
+        local Fonts = _G.RGXFonts
+        if Fonts and type(Fonts.Apply) == "function" and type(Fonts.GetDefault) == "function" then
+            local _, size, flags = label:GetFont()
+            pcall(Fonts.Apply, Fonts, label, Fonts:GetDefault(), size, flags)
+        end
+    end
     label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
     label:SetText(text)
 
@@ -395,4 +402,67 @@ function SQP:CreateStyledCheckbox(parent, text)
     frame.label = label
 
     return frame
+end
+
+-- Create centered two-column layout for an options page. Delegates to the
+-- framework's shared column system when available (RGX-Framework >= 2.7.9)
+-- so every RGX addon's option pages center the same way.
+function SQP:CreateOptionColumns(content, colWidth, gap)
+    local UI = _G.RGXUI
+    if UI and type(UI.CreateColumns) == "function" then
+        return UI:CreateColumns(content, 2, { colWidth = colWidth, gap = gap })
+    end
+    -- Fallback: legacy flush-left/right columns
+    local leftColumn = CreateFrame("Frame", nil, content)
+    leftColumn:SetPoint("TOPLEFT")
+    leftColumn:SetPoint("BOTTOMLEFT")
+    leftColumn:SetWidth(colWidth or 288)
+    local rightColumn = CreateFrame("Frame", nil, content)
+    rightColumn:SetPoint("TOPRIGHT")
+    rightColumn:SetPoint("BOTTOMRIGHT")
+    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", gap or 14, 0)
+    return leftColumn, rightColumn
+end
+
+-- Per-type task icon side section (kill / loot): Left / Right buttons
+-- choosing which side of the quest display the mini icon badge sits on.
+function SQP:CreateIconSideSection(parent, typeKey, activatePreviewFn, yOffset)
+    if not self.optionControls then self.optionControls = {} end
+    local sideKey = typeKey .. "IconSide"
+    local defaultSide = (typeKey == "kill") and "left" or "right"
+    local labelText = (typeKey == "kill") and "Kill Icon Side" or "Loot Icon Side"
+
+    local sideHeader = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    sideHeader:SetPoint("TOPLEFT", 20, yOffset)
+    sideHeader:SetText("|cff58be81" .. labelText .. "|r")
+    yOffset = yOffset - 16
+
+    local leftSideBtn = self:CreateStyledButton(parent, "Left", 64, 20)
+    local rightSideBtn = self:CreateStyledButton(parent, "Right", 64, 20)
+    leftSideBtn:SetPoint("TOPLEFT", 20, yOffset)
+    rightSideBtn:SetPoint("LEFT", leftSideBtn, "RIGHT", 6, 0)
+
+    local function UpdateSideButtons()
+        local current = SQPSettings[sideKey] or defaultSide
+        leftSideBtn:SetAlpha(current == "left" and 1 or 0.6)
+        rightSideBtn:SetAlpha(current == "right" and 1 or 0.6)
+    end
+    UpdateSideButtons()
+    self.optionControls[sideKey .. "SideUpdater"] = UpdateSideButtons
+
+    leftSideBtn:SetScript("OnClick", function()
+        SQP:SetSetting(sideKey, "left")
+        UpdateSideButtons()
+        if activatePreviewFn then activatePreviewFn() end
+        SQP:RefreshAllNameplates()
+    end)
+    rightSideBtn:SetScript("OnClick", function()
+        SQP:SetSetting(sideKey, "right")
+        UpdateSideButtons()
+        if activatePreviewFn then activatePreviewFn() end
+        SQP:RefreshAllNameplates()
+    end)
+
+    yOffset = yOffset - 26
+    return yOffset
 end

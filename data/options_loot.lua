@@ -10,15 +10,7 @@ local addonName, SQP = ...
 function SQP:CreateLootOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(288)
-
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 14, 0)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
     -- ── Slider helper ─────────────────────────────────────────────────────────
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
@@ -186,6 +178,8 @@ function SQP:CreateLootOptions(content)
     rightYOffset = MakeSlider(rightColumn, "Offset X", "lootIconOffsetX", -38, -80, 80, rightYOffset)
     rightYOffset = MakeSlider(rightColumn, "Offset Y", "lootIconOffsetY",  16, -80, 80, rightYOffset)
 
+    rightYOffset = self:CreateIconSideSection(rightColumn, "loot", ActivateLoot, rightYOffset)
+
     -- Reset this tab to loot defaults
     rightYOffset = rightYOffset - 14
     local resetBtn = self:CreateStyledButton(rightColumn, "Reset Loot Settings", 150, 22)
@@ -206,6 +200,8 @@ function SQP:CreateLootOptions(content)
         SQP:SetSetting('lootIconOffsetY',   D.lootIconOffsetY)
         SQP:SetSetting('lootFontSize',      D.lootFontSize)
         SQP:SetSetting('lootFontFamily',    D.lootFontFamily)
+        SQP:SetSetting('lootIconSide',      D.lootIconSide)
+        if oc.lootIconSideSideUpdater then oc.lootIconSideSideUpdater() end
         -- Update checkboxes
         if oc.showLootIcon         then oc.showLootIcon:SetChecked(D.showLootIcon) end
         if oc.lootShowIconBackgroundStyleUpdater then oc.lootShowIconBackgroundStyleUpdater() end

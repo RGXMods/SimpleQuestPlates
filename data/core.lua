@@ -147,7 +147,10 @@ SQP.DEFAULTS = {
     -- Kill / Loot / Percent tabs.
     showQuestMarker = true,          -- Animated quest marker on plate show
     questMarkerSize = 28,
-    percentSignSide = "right",       -- right | left | badgeLeft | badgeRight
+    percentSignSide = "right",       -- right | left
+    killIconSide = "left",           -- kill task icon badge side: left | right
+    lootIconSide = "right",          -- loot task icon badge side: left | right
+    showTargetGlow = true,           -- Blizzard nameplate selection highlight
     animateQuestIcon = false,
     animateQuestIcons = true,
     useGlobalAnimationSettings = false,

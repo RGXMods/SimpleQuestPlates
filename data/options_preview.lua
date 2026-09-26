@@ -384,25 +384,11 @@ function SQP:CreatePreviewSection(parent)
         end
 
         if self.killIcon then
-            self.killIcon:ClearAllPoints()
-            self.killIcon:SetPoint(
-                'TOPRIGHT',
-                icon,
-                'BOTTOMLEFT',
-                SQPSettings.killIconOffsetX or 2,
-                SQPSettings.killIconOffsetY or 15
-            )
+            SQP:AnchorTaskIcon(self.killIcon, icon, "kill")
             self.killIcon:SetSize(SQPSettings.killIconSize or 14, SQPSettings.killIconSize or 14)
         end
         if self.lootIcon then
-            self.lootIcon:ClearAllPoints()
-            self.lootIcon:SetPoint(
-                'TOPLEFT',
-                icon,
-                'BOTTOMRIGHT',
-                SQPSettings.lootIconOffsetX or -38,
-                SQPSettings.lootIconOffsetY or 16
-            )
+            SQP:AnchorTaskIcon(self.lootIcon, icon, "loot")
             self.lootIcon:SetSize(SQPSettings.lootIconSize or 14, SQPSettings.lootIconSize or 14)
         end
 

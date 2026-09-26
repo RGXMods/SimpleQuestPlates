@@ -8,15 +8,7 @@
 local addonName, SQP = ...
 
 function SQP:CreateAboutSection(content)
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(280)
-
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 20, 0)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
     -- ── LEFT COLUMN ───────────────────────────────────────────────────────────
     local yOffset = -15
