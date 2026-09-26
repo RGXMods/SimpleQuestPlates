@@ -3,9 +3,10 @@
 ## Changes
 - New Unified nameplates option: quest overlays attach into Blizzard's own nameplate UnitFrame with a native level-style count chip. Off by default.
 - Fixed default alignment in non-unified mode (health-bar anchoring, Offset Y 0); icons re-anchor after Blizzard recycles plates (death/rez).
-- Fonts default to the RGX framework font and inherit globally; legacy defaults migrate automatically.
+- Fonts default to the Blizzard UI font (Friz Quadrata) and inherit globally; legacy defaults migrate automatically.
 - New options: Quest Marker toggle + size (Icon tab), target glow toggle (General), percent sign side (Percent), kill/loot icon side (Kill/Loot).
 - Options pages use the framework's centered two-column layout.
+- Addon list Category and Group are now `RealmGX` instead of `RGX`.
 
 # v2.1.6-beta.1 - 2026-09-25
 
