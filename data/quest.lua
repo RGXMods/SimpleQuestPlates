@@ -730,7 +730,6 @@ function SQP:UpdateQuestIcon(plate, unitID)
         Q.levelChip:Hide()
     end
 
-    self:ApplyQuestGlow(Q)
     if SQPSettings.syncAnimations then
         self:SyncQuestPulses(Q)
     end

@@ -134,15 +134,6 @@ function SQP:UpdateUnifiedChip(questFrame)
     chip:Show()
 end
 
--- Quest display glow (our texture addition — a soft accent frame around the
--- quest indicator. This never touches Blizzard's own selection highlight).
-function SQP:ApplyQuestGlow(questFrame)
-    local glow = questFrame and questFrame.questGlow
-    if not glow then return end
-    local show = (SQPSettings.showQuestGlow ~= false) and questFrame:IsShown()
-    glow:SetShown(show and true or false)
-end
-
 -- Play all pulses on a plate in phase: stop them all, then start them all in
 -- the same tick so the main/kill/loot animations move together.
 function SQP:SyncQuestPulses(questFrame)
@@ -254,17 +245,6 @@ function SQP:CreateQuestPlate(nameplate)
     )
     questFrame._anchorTarget = anchorTarget
     questFrame.icon = icon
-
-    -- Quest display glow: soft accent frame hugging the quest indicator
-    -- (our texture addition; not Blizzard's selection highlight).
-    local questGlow = CreateFrame("Frame", nil, questFrame, "BackdropTemplate")
-    questGlow:SetPoint("TOPLEFT", icon, "TOPLEFT", -3, 3)
-    questGlow:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 3, -3)
-    questGlow:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
-    questGlow:SetBackdropBorderColor(1, 0.82, 0, 0.55)
-    questGlow:EnableMouse(false)
-    questGlow:Hide()
-    questFrame.questGlow = questGlow
 
     -- Dramatic pulse for main quest icon (more noticeable)
     local function CreateMainPulse(region)
@@ -430,7 +410,6 @@ function SQP:CreateQuestPlate(nameplate)
         else
             qmark:SetAlpha(0)
         end
-        SQP:ApplyQuestGlow(self)
         if SQPSettings.syncAnimations then
             SQP:SyncQuestPulses(self)
         end
@@ -514,11 +493,6 @@ function SQP:OnPlateShow(nameplate, unitID)
     end
 
     self:UpdateQuestIcon(nameplate, unitID)
-
-    -- Targeting a fresh plate shows Blizzard's selection highlight again
-    if SQPSettings.showTargetGlow == false then
-        RGX:After(0, function() self:ApplyTargetGlow(nameplate) end, "SQP target glow")
-    end
 
     -- Recheck shortly after show to allow tooltip data to populate
     local plateRef = nameplate

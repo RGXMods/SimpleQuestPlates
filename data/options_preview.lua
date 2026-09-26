@@ -103,15 +103,6 @@ function SQP:CreatePreviewSection(parent)
     icon:SetTexture('Interface\\QuestFrame\\AutoQuest-Parts')
     icon:SetTexCoord(0.30273438, 0.41992188, 0.015625, 0.953125)
 
-    -- Quest display glow (our texture addition, mirrors the plate behavior)
-    local questGlow = CreateFrame("Frame", nil, questFrame, "BackdropTemplate")
-    questGlow:SetPoint("TOPLEFT", icon, "TOPLEFT", -3, 3)
-    questGlow:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 3, -3)
-    questGlow:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
-    questGlow:SetBackdropBorderColor(1, 0.82, 0, 0.55)
-    questGlow:EnableMouse(false)
-    questGlow:Hide()
-
     -- Quest count text
     local iconText = questFrame:CreateFontString(nil, "OVERLAY", "SystemFont_Outline_Small")
     if iconText.SetDrawLayer then
@@ -229,8 +220,6 @@ function SQP:CreatePreviewSection(parent)
     -- Store references
     previewFrame.nameplate = nameplate
     previewFrame.nameplateBorder = nameplateBorder
-    previewFrame.targetGlow = nil
-    previewFrame.questGlow = questGlow
     previewFrame.questChip = questChip
     previewFrame.questFrame = questFrame
     previewFrame.icon = icon
@@ -554,10 +543,6 @@ function SQP:CreatePreviewSection(parent)
             end
         end
 
-        -- Quest display glow preview (our texture; never Blizzard's selection)
-        if self.questGlow then
-            self.questGlow:SetShown(SQPSettings.showQuestGlow ~= false)
-        end
 
         -- Unified mode shows the count in a level-style chip (no jellybean)
         if self.questChip then
