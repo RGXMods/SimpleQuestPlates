@@ -90,7 +90,7 @@ local function GetAddOnMetadataCompat(name, field)
     return nil
 end
 
-SQP.VERSION = "2.1.5" -- Addon version (also in TOC file)
+SQP.VERSION = "2.1.7-beta.1" -- Addon version (also in TOC file)
 SQP.NAME = GetAddOnMetadataCompat(addonName, "Title") or addonName or "SimpleQuestPlates"
 SQP.AUTHOR = GetAddOnMetadataCompat(addonName, "Author") or "DonnieDice"
 SQP.LOCALE = GetLocale()
@@ -115,9 +115,10 @@ SQP.DEFAULTS = {
     enabled = true,
     scale = 1.1,
     offsetX = 0,
-    offsetY = 3,
+    offsetY = 0,
     anchor = "RIGHT",
     relativeTo = "LEFT",
+    unifiedNameplates = false,
     hideInCombat = false,
     hideInInstance = false,
     minimapIconEnabled = true,
@@ -134,34 +135,22 @@ SQP.DEFAULTS = {
     fontOutline = "",            -- No outline by default
     outlineWidth = 0,
     fontSize = 12,
-    fontFamily = "Fonts\\FRIZQT__.TTF",
+    fontFamily = "FrizQuadrata", -- RGX framework default font (RGXFonts)
     outlineColor = {0, 0, 0},
     outlineAlpha = 0,
     showMessages = true,
     showKillIcon = true,
     showLootIcon = true,
     showPercentIcon = true,
-    -- Per-type font: kill
-    killFontSize = 12,
-    killFontFamily = "Fonts\\FRIZQT__.TTF",
-    killFontOutline = "",
-    killOutlineWidth = 0,
-    killOutlineAlpha = 0,
-    killOutlineColor = {0, 0, 0},
-    -- Per-type font: loot
-    lootFontSize = 12,
-    lootFontFamily = "Fonts\\FRIZQT__.TTF",
-    lootFontOutline = "",
-    lootOutlineWidth = 0,
-    lootOutlineAlpha = 0,
-    lootOutlineColor = {0, 0, 0},
-    -- Per-type font: percent
-    percentFontSize = 8,
-    percentFontFamily = "Fonts\\FRIZQT__.TTF",
-    percentFontOutline = "",
-    percentOutlineWidth = 0,
-    percentOutlineAlpha = 0,
-    percentOutlineColor = {0, 0, 0},
+    -- Per-type fonts (kill/loot/percent) inherit the global font settings by
+    -- default; per-type keys only exist once a user overrides them on the
+    -- Kill / Loot / Percent tabs.
+    showQuestMarker = true,          -- Animated quest marker on plate show
+    questMarkerSize = 28,
+    percentSignSide = "right",       -- right | left
+    killIconSide = "left",           -- kill task icon badge side: left | right
+    lootIconSide = "right",          -- loot task icon badge side: left | right
+    syncAnimations = false,          -- play all task/main pulses in phase
     animateQuestIcon = false,
     animateQuestIcons = true,
     useGlobalAnimationSettings = false,
@@ -321,6 +310,34 @@ function SQP:ApplyDefaults(settings)
     for k, v in pairs(self.DEFAULTS) do
         if settings[k] == nil or (type(v) == "table" and type(settings[k]) ~= "table") then
             settings[k] = CloneValue(v)
+        end
+    end
+end
+
+-- Font default migration: profiles saved before the RGX font default carry
+-- legacy Friz Quadrata values (auto-filled per-type keys that shadow the
+-- global font settings). Rewrite the legacy global default and clear
+-- per-type values that still match the legacy defaults so they inherit the
+-- global font (and General tab font changes) again.
+local LEGACY_DEFAULT_FONT = "Fonts\\FRIZQT__.TTF"
+function SQP:MigrateLegacyFontDefaults(settings)
+    settings = settings or SQPSettings
+    if type(settings) ~= "table" then
+        return
+    end
+    if settings.fontFamily == LEGACY_DEFAULT_FONT then
+        settings.fontFamily = self.DEFAULTS.fontFamily
+    end
+    local legacySize = { kill = 12, loot = 12, percent = 8 }
+    for typeKey, size in pairs(legacySize) do
+        if settings[typeKey .. "FontFamily"] == LEGACY_DEFAULT_FONT then
+            settings[typeKey .. "FontFamily"] = nil
+        end
+        if settings[typeKey .. "FontSize"] == size then
+            settings[typeKey .. "FontSize"] = nil
+        end
+        if settings[typeKey .. "FontOutline"] == "" then
+            settings[typeKey .. "FontOutline"] = nil
         end
     end
 end
