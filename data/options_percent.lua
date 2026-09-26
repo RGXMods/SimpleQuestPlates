@@ -10,7 +10,7 @@ local addonName, SQP = ...
 function SQP:CreatePercentOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
     -- â”€â”€ Slider helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
