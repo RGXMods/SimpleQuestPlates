@@ -134,19 +134,27 @@ function SQP:UpdateUnifiedChip(questFrame)
     chip:Show()
 end
 
--- Suppress Blizzard's selection highlight on nameplates when disabled
-function SQP:ApplyTargetGlow(nameplate)
-    local uf = nameplate and nameplate.UnitFrame
-    local sh = uf and uf.selectionHighlight
-    if not sh then return end
-    if SQPSettings.showTargetGlow == false then
-        sh:Hide()
-    end
+-- Quest display glow (our texture addition — a soft accent frame around the
+-- quest indicator. This never touches Blizzard's own selection highlight).
+function SQP:ApplyQuestGlow(questFrame)
+    local glow = questFrame and questFrame.questGlow
+    if not glow then return end
+    local show = (SQPSettings.showQuestGlow ~= false) and questFrame:IsShown()
+    glow:SetShown(show and true or false)
 end
 
-function SQP:ApplyTargetGlowAll()
-    for plate in pairs(self.ActiveNameplates) do
-        self:ApplyTargetGlow(plate)
+-- Play all pulses on a plate in phase: stop them all, then start them all in
+-- the same tick so the main/kill/loot animations move together.
+function SQP:SyncQuestPulses(questFrame)
+    if not questFrame then return end
+    local pulses = { questFrame.iconPulse, questFrame.percentPulse,
+        questFrame.percentOutlinePulse, questFrame.killIconPulse, questFrame.lootIconPulse }
+    for _, p in ipairs(pulses) do
+        if p and p.Stop then p:Stop() end
+    end
+    for _, p in ipairs(pulses) do
+        local region = p and p.GetParent and p:GetParent()
+        if p and region and region.IsShown and region:IsShown() then p:Play() end
     end
 end
 
@@ -246,6 +254,17 @@ function SQP:CreateQuestPlate(nameplate)
     )
     questFrame._anchorTarget = anchorTarget
     questFrame.icon = icon
+
+    -- Quest display glow: soft accent frame hugging the quest indicator
+    -- (our texture addition; not Blizzard's selection highlight).
+    local questGlow = CreateFrame("Frame", nil, questFrame, "BackdropTemplate")
+    questGlow:SetPoint("TOPLEFT", icon, "TOPLEFT", -3, 3)
+    questGlow:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 3, -3)
+    questGlow:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
+    questGlow:SetBackdropBorderColor(1, 0.82, 0, 0.55)
+    questGlow:EnableMouse(false)
+    questGlow:Hide()
+    questFrame.questGlow = questGlow
 
     -- Dramatic pulse for main quest icon (more noticeable)
     local function CreateMainPulse(region)
@@ -410,6 +429,10 @@ function SQP:CreateQuestPlate(nameplate)
             group:Play()
         else
             qmark:SetAlpha(0)
+        end
+        SQP:ApplyQuestGlow(self)
+        if SQPSettings.syncAnimations then
+            SQP:SyncQuestPulses(self)
         end
     end)
 end

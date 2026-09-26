@@ -43,7 +43,7 @@ function SQP:CreatePercentOptions(content)
     end
 
     -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    local yOffset = -15
+    local yOffset = -12
 
     local header = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     SQP:ApplyDefaultFont(header)
@@ -218,7 +218,7 @@ function SQP:CreatePercentOptions(content)
     -- Percent Sign Tinting (compact inline row)
     yOffset = self:CreateMiniIconTintSection(leftColumn, "percent", ActivatePercent, yOffset)
 
-    local rightYOffset = -15
+    local rightYOffset = -12
 
     local posHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     SQP:ApplyDefaultFont(posHeader)

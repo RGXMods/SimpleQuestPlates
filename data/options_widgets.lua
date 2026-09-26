@@ -76,6 +76,20 @@ function SQP:CreateStyledSlider(parent, options)
 	return slider
 end
 
+-- Attach a hover tooltip to a control (explanations stay out of panel body)
+function SQP:SetControlTooltip(widget, text)
+    if not widget or not widget.SetScript or not widget.EnableMouse then return end
+    widget:EnableMouse(true)
+    widget:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(text, 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    widget:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+end
+
 -- Create a font settings section (size + family)
 -- typeKey: "kill", "loot", or "percent" for per-type overrides; nil for the
 -- global nameplate font (shared settings). Per-type sections inherit the
