@@ -444,7 +444,10 @@ function SQP:UpdateQuestFont(fontString, outlineFontString, percentFontString, p
     local S = SQPSettings or {}
 
     local function applyFont(main, outline, tk, sizeOverride)
-        local requestedFont = (tk and S[tk.."FontFamily"]) or S.fontFamily or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+        local Fonts = _G.RGXFonts
+        local rgxDefaultFont = (Fonts and type(Fonts.GetDefault) == "function" and Fonts:GetDefault()) or nil
+        local requestedFont = (tk and S[tk.."FontFamily"]) or S.fontFamily or rgxDefaultFont
+            or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
         local fontName    = requestedFont
         local fontSize    = sizeOverride or (tk and S[tk.."FontSize"]) or S.fontSize or 12
         local fontOutline = (tk and S[tk.."FontOutline"])  or S.fontOutline or ""
@@ -458,9 +461,8 @@ function SQP:UpdateQuestFont(fontString, outlineFontString, percentFontString, p
         if noOutline then outlineWidth = 0 end
         if outlineWidth < 0 then outlineWidth = 0 end
 
-        local Fonts = _G.RGXFonts
         if Fonts and type(Fonts.ResolvePath) == "function" then
-            fontName = Fonts:ResolvePath(requestedFont, S.fontFamily or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
+            fontName = Fonts:ResolvePath(requestedFont, rgxDefaultFont or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
         end
         fontName = normalizeFontPath(fontName)
 

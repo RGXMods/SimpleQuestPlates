@@ -81,9 +81,6 @@ function SQP:CreateGlobalOptions(content)
                 end
                 currentFontName = resolvedName
                 SQP:SetSetting("fontFamily", fontPath)
-                SQP:SetSetting("killFontFamily", fontPath)
-                SQP:SetSetting("lootFontFamily", fontPath)
-                SQP:SetSetting("percentFontFamily", fontPath)
                 UIDropDownMenu_SetText(dropdown, rgxFonts:GetDropdownFontLabel(resolvedName))
                 SQP:RefreshFontDisplays()
             end
@@ -126,7 +123,7 @@ function SQP:CreateGlobalOptions(content)
             UIDropDownMenu_SetText(dropdown, rgxFonts:GetDropdownFontLabel(currentFontName))
 
             function holder:Reset()
-                SetSelected(defaultFontName)
+                SetSelected(rgxFonts:GetDefault() or defaultFontName)
             end
 
             return holder
@@ -193,9 +190,9 @@ function SQP:CreateGlobalOptions(content)
         familyReset:SetPoint("LEFT", fontControl, "RIGHT", 6, 6)
         y = y - 62
 
-	local sharedSize = tonumber(SQPSettings.killFontSize) or tonumber(SQPSettings.fontSize) or defaultSharedSize
+	local sharedSize = tonumber(SQPSettings.fontSize) or tonumber(SQPSettings.killFontSize) or defaultSharedSize
 	local sizeSlider = self:CreateStyledSlider(parent, {
-		key = "killFontSize",
+		key = "fontSize",
 		label = "Size",
 		min = 6,
 		max = 26,
@@ -205,9 +202,6 @@ function SQP:CreateGlobalOptions(content)
 		width = 160,
 		onChange = function(val)
 			SQP:SetSetting("fontSize", val)
-			SQP:SetSetting("killFontSize", val)
-			SQP:SetSetting("lootFontSize", val)
-			SQP:SetSetting("percentFontSize", val)
 			SQP:RefreshFontDisplays()
 		end,
 	})

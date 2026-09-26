@@ -135,34 +135,16 @@ SQP.DEFAULTS = {
     fontOutline = "",            -- No outline by default
     outlineWidth = 0,
     fontSize = 12,
-    fontFamily = "Fonts\\FRIZQT__.TTF",
+    fontFamily = "Inter-Regular", -- RGX framework default font (RGXFonts)
     outlineColor = {0, 0, 0},
     outlineAlpha = 0,
     showMessages = true,
     showKillIcon = true,
     showLootIcon = true,
     showPercentIcon = true,
-    -- Per-type font: kill
-    killFontSize = 12,
-    killFontFamily = "Fonts\\FRIZQT__.TTF",
-    killFontOutline = "",
-    killOutlineWidth = 0,
-    killOutlineAlpha = 0,
-    killOutlineColor = {0, 0, 0},
-    -- Per-type font: loot
-    lootFontSize = 12,
-    lootFontFamily = "Fonts\\FRIZQT__.TTF",
-    lootFontOutline = "",
-    lootOutlineWidth = 0,
-    lootOutlineAlpha = 0,
-    lootOutlineColor = {0, 0, 0},
-    -- Per-type font: percent
-    percentFontSize = 8,
-    percentFontFamily = "Fonts\\FRIZQT__.TTF",
-    percentFontOutline = "",
-    percentOutlineWidth = 0,
-    percentOutlineAlpha = 0,
-    percentOutlineColor = {0, 0, 0},
+    -- Per-type fonts (kill/loot/percent) inherit the global font settings by
+    -- default; per-type keys only exist once a user overrides them on the
+    -- Kill / Loot / Percent tabs.
     animateQuestIcon = false,
     animateQuestIcons = true,
     useGlobalAnimationSettings = false,
@@ -322,6 +304,34 @@ function SQP:ApplyDefaults(settings)
     for k, v in pairs(self.DEFAULTS) do
         if settings[k] == nil or (type(v) == "table" and type(settings[k]) ~= "table") then
             settings[k] = CloneValue(v)
+        end
+    end
+end
+
+-- Font default migration: profiles saved before the RGX font default carry
+-- legacy Friz Quadrata values (auto-filled per-type keys that shadow the
+-- global font settings). Rewrite the legacy global default and clear
+-- per-type values that still match the legacy defaults so they inherit the
+-- global font (and General tab font changes) again.
+local LEGACY_DEFAULT_FONT = "Fonts\\FRIZQT__.TTF"
+function SQP:MigrateLegacyFontDefaults(settings)
+    settings = settings or SQPSettings
+    if type(settings) ~= "table" then
+        return
+    end
+    if settings.fontFamily == LEGACY_DEFAULT_FONT then
+        settings.fontFamily = self.DEFAULTS.fontFamily
+    end
+    local legacySize = { kill = 12, loot = 12, percent = 8 }
+    for typeKey, size in pairs(legacySize) do
+        if settings[typeKey .. "FontFamily"] == LEGACY_DEFAULT_FONT then
+            settings[typeKey .. "FontFamily"] = nil
+        end
+        if settings[typeKey .. "FontSize"] == size then
+            settings[typeKey .. "FontSize"] = nil
+        end
+        if settings[typeKey .. "FontOutline"] == "" then
+            settings[typeKey .. "FontOutline"] = nil
         end
     end
 end
