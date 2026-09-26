@@ -46,19 +46,15 @@ function SQP:CreatePreviewSection(parent)
     nameplate:SetSize(112, 44)
     nameplate:SetPoint("CENTER", previewFrame, "CENTER", 0, 8)
 
-    -- Nameplate background
+    -- Nameplate background (Blizzard nameplate navy)
     local nameplateBackground = nameplate:CreateTexture(nil, "BACKGROUND")
     nameplateBackground:SetAllPoints()
-    nameplateBackground:SetColorTexture(0.12, 0.12, 0.12, 0.45)
+    nameplateBackground:SetColorTexture(0.05, 0.07, 0.10, 0.6)
 
     local nameplateBorder = CreateFrame("Frame", nil, nameplate, "BackdropTemplate")
     nameplateBorder:SetAllPoints()
-    nameplateBorder:SetBackdrop({
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        edgeSize = 10,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
-    nameplateBorder:SetBackdropBorderColor(0.18, 0.18, 0.18, 0.9)
+    nameplateBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
+    nameplateBorder:SetBackdropBorderColor(0.10, 0.13, 0.16, 1)
 
     -- Health bar
     local healthBar = CreateFrame("StatusBar", nil, nameplate)
@@ -68,6 +64,21 @@ function SQP:CreatePreviewSection(parent)
     healthBar:SetStatusBarColor(0.95, 0.16, 0.16)
     healthBar:SetMinMaxValues(0, 100)
     healthBar:SetValue(75)
+
+    -- Health bar border (Blizzard plates draw a thin black edge around the bar)
+    local healthBarBorder = CreateFrame("Frame", nil, healthBar, "BackdropTemplate")
+    healthBarBorder:SetAllPoints()
+    healthBarBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
+    healthBarBorder:SetBackdropBorderColor(0, 0, 0, 0.9)
+
+    -- Selection highlight mock: the bright border Blizzard draws on the
+    -- targeted unit's nameplate. Shown in the preview when the target glow
+    -- option is enabled.
+    local targetGlow = CreateFrame("Frame", nil, healthBar, "BackdropTemplate")
+    targetGlow:SetPoint("TOPLEFT", -1, 1)
+    targetGlow:SetPoint("BOTTOMRIGHT", 1, -1)
+    targetGlow:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 2 })
+    targetGlow:SetBackdropBorderColor(1, 1, 1, 0.9)
 
     -- Health bar background
     local healthBackground = healthBar:CreateTexture(nil, "BACKGROUND")
@@ -80,11 +91,16 @@ function SQP:CreatePreviewSection(parent)
     nameText:SetText("Murloc Warrior")
     nameText:SetTextColor(1, 0.82, 0)
 
-    -- Level text
+    -- Level text as a native level chip: small dark box right of the name
     local levelText = nameplate:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    levelText:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, -1)
-    levelText:SetText("Level 15")
-    levelText:SetTextColor(0.8, 0.8, 0.8)
+    levelText:SetPoint("LEFT", nameText, "RIGHT", 5, 0)
+    levelText:SetText("15")
+    levelText:SetTextColor(1, 1, 1)
+
+    local levelChipBg = nameplate:CreateTexture(nil, "ARTWORK", nil, -1)
+    levelChipBg:SetColorTexture(0, 0, 0, 0.55)
+    levelChipBg:SetPoint("TOPLEFT", levelText, "TOPLEFT", -3, 2)
+    levelChipBg:SetPoint("BOTTOMRIGHT", levelText, "BOTTOMRIGHT", 3, -2)
 
     -- Create preview quest icon
     local questFrame = CreateFrame("Frame", nil, nameplate)
@@ -205,9 +221,16 @@ function SQP:CreatePreviewSection(parent)
         return pulse
     end
 
+    -- Unified-mode count chip (level-style backdrop behind the number)
+    local questChip = questFrame:CreateTexture(nil, "OVERLAY", nil, 0)
+    questChip:SetColorTexture(0, 0, 0, 0.55)
+    questChip:Hide()
+
     -- Store references
     previewFrame.nameplate = nameplate
     previewFrame.nameplateBorder = nameplateBorder
+    previewFrame.targetGlow = targetGlow
+    previewFrame.questChip = questChip
     previewFrame.questFrame = questFrame
     previewFrame.icon = icon
     previewFrame.iconText = iconText
@@ -377,9 +400,9 @@ function SQP:CreatePreviewSection(parent)
 
         if self.modeCaption then
             if SQPSettings.unifiedNameplates then
-                self.modeCaption:SetText("|cff58be81Mode: Unified (attached to Blizzard frames)|r")
+                self.modeCaption:SetText("|cff58be81Mode: Unified (level-style chip)|r")
             else
-                self.modeCaption:SetText("|cff9a9a9aMode: Overlay (floating beside plate)|r")
+                self.modeCaption:SetText("|cff9a9a9aMode: Overlay (floating)|r")
             end
         end
 
@@ -527,6 +550,26 @@ function SQP:CreatePreviewSection(parent)
                     self.iconText:SetText("")
                     if self.iconTextOutline then self.iconTextOutline:SetText("") end
                 end
+            end
+        end
+
+        -- Target selection highlight visibility
+        if self.targetGlow then
+            self.targetGlow:SetShown(SQPSettings.showTargetGlow ~= false)
+        end
+
+        -- Unified mode shows the count in a level-style chip (no jellybean)
+        if self.questChip then
+            if SQPSettings.unifiedNameplates then
+                icon:Hide()
+                self.questChip:ClearAllPoints()
+                self.questChip:SetPoint("CENTER", iconText, "CENTER", 0, 0)
+                local cw = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
+                local _, ch = iconText:GetFont()
+                self.questChip:SetSize(cw + 10, (ch or 12) + 8)
+                self.questChip:Show()
+            else
+                self.questChip:Hide()
             end
         end
 

@@ -12,7 +12,7 @@ function SQP:CreatePercentOptions(content)
 
     local leftColumn, rightColumn = SQP:CreateOptionColumns(content, 288, 14)
 
-    -- ── Slider helper ─────────────────────────────────────────────────────────
+    -- â”€â”€ Slider helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
         local slider = SQP:CreateStyledSlider(parent, {
             key = key,
@@ -42,10 +42,11 @@ function SQP:CreatePercentOptions(content)
         end
     end
 
-    -- ── LEFT COLUMN ────────────────────────────────────────────────────────────
+    -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local yOffset = -15
 
     local header = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(header)
     header:SetPoint("TOPLEFT", 20, yOffset)
     header:SetText("|cff58be81Percent Icon|r")
     yOffset = yOffset - 16
@@ -64,6 +65,7 @@ function SQP:CreatePercentOptions(content)
 
     -- Percent Sign Side
     local sideHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(sideHeader)
     sideHeader:SetPoint("TOPLEFT", 20, yOffset)
     sideHeader:SetText("|cff58be81Percent Sign Side|r")
     yOffset = yOffset - 16
@@ -110,6 +112,7 @@ function SQP:CreatePercentOptions(content)
 
     -- Animate
     local animHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(animHeader)
     animHeader:SetPoint("TOPLEFT", 20, yOffset)
     animHeader:SetText("|cff58be81Animate|r")
     yOffset = yOffset - 16
@@ -167,6 +170,7 @@ function SQP:CreatePercentOptions(content)
 
     -- Percent Color
     local colorHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(colorHeader)
     colorHeader:SetPoint("TOPLEFT", 20, yOffset)
     colorHeader:SetText("|cff58be81Color|r")
     yOffset = yOffset - 16
@@ -183,6 +187,7 @@ function SQP:CreatePercentOptions(content)
     SQP.optionControls.percentColorSwatch = sw
 
     local colorLbl = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(colorLbl)
     colorLbl:SetPoint("LEFT", colorBtn, "RIGHT", 6, 0)
     colorLbl:SetText("Percent Color")
 
@@ -209,13 +214,14 @@ function SQP:CreatePercentOptions(content)
     end)
     yOffset = yOffset - 28
 
-    -- ── RIGHT COLUMN ──────────────────────────────────────────────────────────
+    -- â”€â”€ RIGHT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     -- Percent Sign Tinting (compact inline row)
     yOffset = self:CreateMiniIconTintSection(leftColumn, "percent", ActivatePercent, yOffset)
 
     local rightYOffset = -15
 
     local posHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(posHeader)
     posHeader:SetPoint("TOPLEFT", 20, rightYOffset)
     posHeader:SetText("|cff58be81Size & Position|r")
     rightYOffset = rightYOffset - 16
