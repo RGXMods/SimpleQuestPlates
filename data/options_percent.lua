@@ -70,6 +70,51 @@ function SQP:CreatePercentOptions(content)
     end)
     yOffset = yOffset - 24
 
+    -- Percent Sign Side
+    local sideHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    sideHeader:SetPoint("TOPLEFT", 20, yOffset)
+    sideHeader:SetText("|cff58be81Percent Sign Side|r")
+    yOffset = yOffset - 16
+
+    local sideOptions = {
+        { label = "Right",     value = "right"      },
+        { label = "Left",      value = "left"       },
+        { label = "Lower L",   value = "badgeLeft"  },
+        { label = "Lower R",   value = "badgeRight" },
+    }
+    local sideButtons = {}
+    local prevBtn
+    for _, opt in ipairs(sideOptions) do
+        local btn = self:CreateStyledButton(leftColumn, opt.label, 60, 20)
+        if prevBtn then
+            btn:SetPoint("LEFT", prevBtn, "RIGHT", 6, 0)
+        else
+            btn:SetPoint("TOPLEFT", 20, yOffset)
+        end
+        sideButtons[opt.value] = btn
+        prevBtn = btn
+    end
+
+    local function UpdateSideButtons()
+        local current = SQPSettings.percentSignSide or "right"
+        for value, btn in pairs(sideButtons) do
+            btn:SetAlpha(current == value and 1 or 0.6)
+        end
+    end
+    self.optionControls.percentSignSideButtons = sideButtons
+    self.optionControls.updatePercentSignSideButtons = UpdateSideButtons
+    UpdateSideButtons()
+
+    for value, btn in pairs(sideButtons) do
+        btn:SetScript("OnClick", function()
+            SQP:SetSetting('percentSignSide', value)
+            UpdateSideButtons()
+            ActivatePercent()
+            SQP:RefreshAllNameplates()
+        end)
+    end
+    yOffset = yOffset - 26
+
     -- Display Style
     yOffset = self:CreateDisplayStyleSection(leftColumn, "percent", ActivatePercent, yOffset)
 

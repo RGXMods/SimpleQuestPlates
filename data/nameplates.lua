@@ -64,6 +64,34 @@ local function setFontSafe(fontString, fontPath, fontSize, fontFlags)
     return false
 end
 
+-- Position the percent sign ("icon" mode) or the combined percent text
+-- ("text" mode). In icon mode the side setting controls placement: hugging
+-- the number's left/right side, or in the kill/loot mini-icon badge slots.
+-- The offset sliders still apply on top (right/left modes treat X as the
+-- distance from the number; badge modes mirror the kill/loot anchors).
+function SQP:AnchorPercentSign(percentIcon, icon, textMode)
+    if not percentIcon or not icon then
+        return
+    end
+    local offX = SQPSettings.percentIconOffsetX or 18
+    local offY = SQPSettings.percentIconOffsetY or 0
+    percentIcon:ClearAllPoints()
+    if textMode then
+        percentIcon:SetPoint('CENTER', icon, offX, offY)
+        return
+    end
+    local side = SQPSettings.percentSignSide or "right"
+    if side == "left" then
+        percentIcon:SetPoint('CENTER', icon, -offX, offY)
+    elseif side == "badgeLeft" then
+        percentIcon:SetPoint('TOPRIGHT', icon, 'BOTTOMLEFT', offX - 6, offY + 12)
+    elseif side == "badgeRight" then
+        percentIcon:SetPoint('TOPLEFT', icon, 'BOTTOMRIGHT', -(offX - 6), offY + 12)
+    else
+        percentIcon:SetPoint('CENTER', icon, offX, offY)
+    end
+end
+
 -- Nameplate storage
 SQP.Nameplates = {} -- [plate] = frame
 SQP.ActiveNameplates = {} -- [plate] = frame (visible only)
@@ -269,7 +297,7 @@ function SQP:CreateQuestPlate(nameplate)
     if percentIcon.SetDrawLayer then
         percentIcon:SetDrawLayer('OVERLAY', 2)
     end
-    percentIcon:SetPoint('CENTER', icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+    self:AnchorPercentSign(percentIcon, icon, false)
     percentIcon:SetTextColor(0.2, 1, 1)
     percentIcon:Hide()
 
@@ -277,7 +305,7 @@ function SQP:CreateQuestPlate(nameplate)
     if percentIconOutline.SetDrawLayer then
         percentIconOutline:SetDrawLayer('OVERLAY', 1)
     end
-    percentIconOutline:SetPoint('CENTER', icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+    self:AnchorPercentSign(percentIconOutline, icon, false)
     percentIconOutline:SetTextColor(0, 0, 0, 1)
     percentIconOutline:Hide()
 
@@ -292,13 +320,14 @@ function SQP:CreateQuestPlate(nameplate)
     questFrame.percentPulse = CreatePulse(percentIcon)
     questFrame.percentOutlinePulse = CreatePulse(percentIconOutline)
     
-    -- Quest complete animation
+    -- Quest complete animation (quick "pops" when the quest frame shows)
     local qmark = questFrame:CreateTexture(nil, 'OVERLAY', nil, 7)
-    qmark:SetSize(28, 28)
+    qmark:SetSize(SQPSettings.questMarkerSize or 28, SQPSettings.questMarkerSize or 28)
     qmark:SetPoint('CENTER', icon)
     qmark:SetTexture('Interface/WorldMap/UI-WorldMap-QuestIcon')
     qmark:SetTexCoord(0, 0.56, 0.5, 1)
     qmark:SetAlpha(0)
+    questFrame.qmark = qmark
     
     local duration = 1
     local group = qmark:CreateAnimationGroup()
@@ -324,7 +353,11 @@ function SQP:CreateQuestPlate(nameplate)
     questFrame.ani = group
     
     questFrame:HookScript('OnShow', function(self)
-        group:Play()
+        if SQPSettings.showQuestMarker ~= false then
+            group:Play()
+        else
+            qmark:SetAlpha(0)
+        end
     end)
 end
 
@@ -533,6 +566,11 @@ function SQP:RefreshAllNameplates()
             questFrame._anchorTarget = refreshTarget
             questFrame:SetScale(SQPSettings.scale or 1)
 
+            if questFrame.qmark then
+                local qms = SQPSettings.questMarkerSize or 28
+                questFrame.qmark:SetSize(qms, qms)
+            end
+
             if questFrame.killIcon then
                 questFrame.killIcon:ClearAllPoints()
                 questFrame.killIcon:SetPoint(
@@ -635,8 +673,7 @@ function SQP:RefreshAllNameplates()
             if questFrame.percentIcon then
                 if questFrame.questType == 3 then
                     local percentIconMode = IsIconStyleEnabled("percent")
-                    questFrame.percentIcon:ClearAllPoints()
-                    questFrame.percentIcon:SetPoint('CENTER', questFrame.icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+                    self:AnchorPercentSign(questFrame.percentIcon, questFrame.icon, not percentIconMode)
                     if SQPSettings.percentTintIcon and SQPSettings.percentTintIconColor then
                         local r, g, b, a = unpack(SQPSettings.percentTintIconColor)
                         questFrame.percentIcon:SetTextColor(r, g, b, a or 1)
@@ -645,8 +682,7 @@ function SQP:RefreshAllNameplates()
                     end
                     questFrame.percentIcon:Show()
                     if questFrame.percentIconOutline then
-                        questFrame.percentIconOutline:ClearAllPoints()
-                        questFrame.percentIconOutline:SetPoint('CENTER', questFrame.icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+                        self:AnchorPercentSign(questFrame.percentIconOutline, questFrame.icon, not percentIconMode)
                         local outlineWidth = SQP:GetOutlineInfo("percent")
                         if outlineWidth and outlineWidth > 0 then
                             questFrame.percentIconOutline:Show()

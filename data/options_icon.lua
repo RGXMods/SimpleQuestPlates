@@ -134,6 +134,39 @@ function SQP:CreateIconOptions(content)
 
 	rightYOffset = rightYOffset - 48
 
+    -- Quest Marker (animated "?" when the quest frame shows)
+    local markerHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    markerHeader:SetPoint("TOPLEFT", 20, rightYOffset)
+    markerHeader:SetText("|cff58be81Quest Marker|r")
+    rightYOffset = rightYOffset - 20
+
+    local markerFrame = self:CreateStyledCheckbox(rightColumn, "Show quest marker animation")
+    markerFrame:SetPoint("TOPLEFT", 20, rightYOffset)
+    markerFrame.checkbox:SetChecked(SQPSettings.showQuestMarker ~= false)
+    self.optionControls.showQuestMarker = markerFrame.checkbox
+    markerFrame.checkbox:SetScript("OnClick", function(self)
+        SQP:SetSetting('showQuestMarker', self:GetChecked())
+    end)
+    rightYOffset = rightYOffset - 44
+
+	local markerSizeSlider = self:CreateStyledSlider(rightColumn, {
+		key = "questMarkerSize",
+		label = "Marker Size",
+		min = 10,
+		max = 48,
+		step = 1,
+		default = 28,
+		storage = SQPSettings,
+		width = 160,
+		onChange = function(value)
+			SQP:RefreshAllNameplates()
+		end,
+	})
+	markerSizeSlider:SetPoint("TOPLEFT", 20, rightYOffset)
+	self.optionControls.questMarkerSize = markerSizeSlider
+
+	rightYOffset = rightYOffset - 48
+
     -- Display Style (also available on Kill / Loot / Percent tabs)
     rightYOffset = self:CreateDisplayStyleSection(rightColumn, nil, nil, rightYOffset)
 end

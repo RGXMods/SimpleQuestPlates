@@ -3,6 +3,8 @@
 ## Changes
 - New Unified nameplates option: quest overlays parent into Blizzard's own nameplate UnitFrame (move/scale/fade with the native plate). Off by default.
 - Fixed default alignment in non-unified mode: icons anchor to the health bar container; default Offset Y is now 0 (flush).
+- New Quest Marker animation toggle + size slider (Icon tab) and Percent Sign Side selector (Percent tab).
+- Fonts default to the RGX framework font (Inter-Regular) and inherit globally; legacy Friz Quadrata defaults are migrated.
 
 # v2.1.6-beta.1 - 2026-09-25
 
