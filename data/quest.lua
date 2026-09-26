@@ -721,6 +721,19 @@ function SQP:UpdateQuestIcon(plate, unitID)
         end
     end
 
+    -- Unified mode: the level-chip replaces the jellybean visual; the icon
+    -- frame stays as anchor geometry but its texture stays hidden.
+    if self:IsUnifiedMode(plate) then
+        if Q.icon then Q.icon:Hide() end
+        self:UpdateUnifiedChip(Q)
+    elseif Q.levelChip then
+        Q.levelChip:Hide()
+    end
+
+    if SQPSettings.syncAnimations then
+        self:SyncQuestPulses(Q)
+    end
+
     reportSlowPath("UpdateQuestIcon", started)
 end
 

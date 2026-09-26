@@ -23,19 +23,13 @@ function SQP:ADDON_LOADED(addon)
     if addon ~= addonName then return end
     
     self:LoadSettings()
+    self:MigrateLegacyFontDefaults()
     TryInitializeUI()
     
     -- Reanchor existing plates after settings load
     for plate, questFrame in pairs(self.QuestPlates) do
         if questFrame then
-            questFrame.icon:ClearAllPoints()
-            questFrame.icon:SetPoint(
-                SQPSettings.anchor or 'RIGHT',
-                questFrame,
-                SQPSettings.relativeTo or 'LEFT',
-                (SQPSettings.offsetX or 0) / (SQPSettings.scale or 1),
-                (SQPSettings.offsetY or 0) / (SQPSettings.scale or 1)
-            )
+            self:RefreshQuestPlateAnchor(plate)
             questFrame:SetScale(SQPSettings.scale or 1)
         end
     end

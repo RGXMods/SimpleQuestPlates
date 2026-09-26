@@ -36,24 +36,25 @@ function SQP:CreatePreviewSection(parent)
     lootTypeBtn:SetPoint("LEFT", killTypeBtn, "RIGHT", 4, 0)
     pctTypeBtn:SetPoint("LEFT",  lootTypeBtn, "RIGHT", 4, 0)
 
+    -- Mode caption: shows which nameplate integration mode is active
+    local modeCaption = previewFrame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    modeCaption:SetPoint("TOPRIGHT", previewFrame, "TOPRIGHT", -10, -6)
+    previewFrame.modeCaption = modeCaption
+
     -- Create fake nameplate (geometry is synced to a live nameplate when available)
     local nameplate = CreateFrame("Frame", nil, previewFrame)
     nameplate:SetSize(112, 44)
     nameplate:SetPoint("CENTER", previewFrame, "CENTER", 0, 8)
 
-    -- Nameplate background
+    -- Nameplate background (Blizzard nameplate navy)
     local nameplateBackground = nameplate:CreateTexture(nil, "BACKGROUND")
     nameplateBackground:SetAllPoints()
-    nameplateBackground:SetColorTexture(0.12, 0.12, 0.12, 0.45)
+    nameplateBackground:SetColorTexture(0.05, 0.07, 0.10, 0.6)
 
     local nameplateBorder = CreateFrame("Frame", nil, nameplate, "BackdropTemplate")
     nameplateBorder:SetAllPoints()
-    nameplateBorder:SetBackdrop({
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        edgeSize = 10,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 },
-    })
-    nameplateBorder:SetBackdropBorderColor(0.18, 0.18, 0.18, 0.9)
+    nameplateBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
+    nameplateBorder:SetBackdropBorderColor(0.10, 0.13, 0.16, 1)
 
     -- Health bar
     local healthBar = CreateFrame("StatusBar", nil, nameplate)
@@ -64,22 +65,33 @@ function SQP:CreatePreviewSection(parent)
     healthBar:SetMinMaxValues(0, 100)
     healthBar:SetValue(75)
 
+    -- Health bar border (Blizzard plates draw a thin black edge around the bar)
+    local healthBarBorder = CreateFrame("Frame", nil, healthBar, "BackdropTemplate")
+    healthBarBorder:SetAllPoints()
+    healthBarBorder:SetBackdrop({ edgeFile = "Interface\\Buttons\\WHITE8x8", edgeSize = 1 })
+    healthBarBorder:SetBackdropBorderColor(0, 0, 0, 0.9)
+
     -- Health bar background
     local healthBackground = healthBar:CreateTexture(nil, "BACKGROUND")
     healthBackground:SetAllPoints()
     healthBackground:SetColorTexture(0.1, 0.1, 0.1, 0.8)
 
-    -- Name text
+    -- Name text (left above the bar, like Blizzard plates)
     local nameText = nameplate:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    nameText:SetPoint("BOTTOM", healthBar, "TOP", 0, 1)
+    nameText:SetPoint("BOTTOMLEFT", healthBar, "TOPLEFT", 2, 1)
     nameText:SetText("Murloc Warrior")
     nameText:SetTextColor(1, 0.82, 0)
 
-    -- Level text
+    -- Level text as a native level chip: small dark box right of the bar
     local levelText = nameplate:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-    levelText:SetPoint("TOPLEFT", healthBar, "BOTTOMLEFT", 0, -1)
-    levelText:SetText("Level 15")
-    levelText:SetTextColor(0.8, 0.8, 0.8)
+    levelText:SetPoint("BOTTOMRIGHT", healthBar, "TOPRIGHT", -2, 1)
+    levelText:SetText("15")
+    levelText:SetTextColor(1, 1, 1)
+
+    local levelChipBg = nameplate:CreateTexture(nil, "ARTWORK", nil, -1)
+    levelChipBg:SetColorTexture(0, 0, 0, 0.55)
+    levelChipBg:SetPoint("TOPLEFT", levelText, "TOPLEFT", -3, 2)
+    levelChipBg:SetPoint("BOTTOMRIGHT", levelText, "BOTTOMRIGHT", 3, -2)
 
     -- Create preview quest icon
     local questFrame = CreateFrame("Frame", nil, nameplate)
@@ -200,9 +212,15 @@ function SQP:CreatePreviewSection(parent)
         return pulse
     end
 
+    -- Unified-mode count chip (level-style backdrop behind the number)
+    local questChip = questFrame:CreateTexture(nil, "OVERLAY", nil, 0)
+    questChip:SetColorTexture(0, 0, 0, 0.55)
+    questChip:Hide()
+
     -- Store references
     previewFrame.nameplate = nameplate
     previewFrame.nameplateBorder = nameplateBorder
+    previewFrame.questChip = questChip
     previewFrame.questFrame = questFrame
     previewFrame.icon = icon
     previewFrame.iconText = iconText
@@ -358,34 +376,32 @@ function SQP:CreatePreviewSection(parent)
 
         icon:SetSize(28, 22)
         icon:ClearAllPoints()
+        -- Mirror the live anchor target: unified mode attaches flush to the
+        -- health bar (the preview analog of HealthBarsContainer); legacy
+        -- mode floats beside the outer plate boundary.
+        local anchorTarget = SQPSettings.unifiedNameplates and healthBar or nameplate
         icon:SetPoint(
             SQPSettings.anchor or 'RIGHT',
-            nameplate,
+            anchorTarget,
             SQPSettings.relativeTo or 'LEFT',
             SQPSettings.offsetX or 0,
             SQPSettings.offsetY or 0
         )
 
+        if self.modeCaption then
+            if SQPSettings.unifiedNameplates then
+                self.modeCaption:SetText("|cff58be81Mode: Unified (level-style chip)|r")
+            else
+                self.modeCaption:SetText("|cff9a9a9aMode: Overlay (floating)|r")
+            end
+        end
+
         if self.killIcon then
-            self.killIcon:ClearAllPoints()
-            self.killIcon:SetPoint(
-                'TOPRIGHT',
-                icon,
-                'BOTTOMLEFT',
-                SQPSettings.killIconOffsetX or 2,
-                SQPSettings.killIconOffsetY or 15
-            )
+            SQP:AnchorTaskIcon(self.killIcon, icon, "kill")
             self.killIcon:SetSize(SQPSettings.killIconSize or 14, SQPSettings.killIconSize or 14)
         end
         if self.lootIcon then
-            self.lootIcon:ClearAllPoints()
-            self.lootIcon:SetPoint(
-                'TOPLEFT',
-                icon,
-                'BOTTOMRIGHT',
-                SQPSettings.lootIconOffsetX or -38,
-                SQPSettings.lootIconOffsetY or 16
-            )
+            SQP:AnchorTaskIcon(self.lootIcon, icon, "loot")
             self.lootIcon:SetSize(SQPSettings.lootIconSize or 14, SQPSettings.lootIconSize or 14)
         end
 
@@ -478,24 +494,20 @@ function SQP:CreatePreviewSection(parent)
             if self.killIcon  then self.killIcon:Hide()  end
 
             if SQPSettings.showPercentIcon ~= false then
-                local pOffX = SQPSettings.percentIconOffsetX or 18
-                local pOffY = SQPSettings.percentIconOffsetY or 0
                 local pOW   = SQP:GetOutlineInfo("percent")
                 if percentIconMode then
-                    -- Icon mode: jellybean + number + "%" at offset
+                    -- Icon mode: jellybean + number + "%" at configured side
                     icon:Show()
                     self.iconText:SetText("75")
                     if self.iconTextOutline then self.iconTextOutline:SetText("75") end
                     if self.percentIcon then
-                        self.percentIcon:ClearAllPoints()
-                        self.percentIcon:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIcon, icon, false)
                         self.percentIcon:SetText("%")
                         SetPreviewPercentColor(self.percentIcon)
                         self.percentIcon:Show()
                     end
                     if self.percentIconOutline then
-                        self.percentIconOutline:ClearAllPoints()
-                        self.percentIconOutline:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIconOutline, icon, false)
                         self.percentIconOutline:SetText("%")
                         if pOW > 0 then self.percentIconOutline:Show() else self.percentIconOutline:Hide() end
                     end
@@ -505,15 +517,13 @@ function SQP:CreatePreviewSection(parent)
                     self.iconText:SetText("")
                     if self.iconTextOutline then self.iconTextOutline:SetText("") end
                     if self.percentIcon then
-                        self.percentIcon:ClearAllPoints()
-                        self.percentIcon:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIcon, icon, true)
                         self.percentIcon:SetText("75%")
                         SetPreviewPercentColor(self.percentIcon)
                         self.percentIcon:Show()
                     end
                     if self.percentIconOutline then
-                        self.percentIconOutline:ClearAllPoints()
-                        self.percentIconOutline:SetPoint('CENTER', icon, pOffX, pOffY)
+                        SQP:AnchorPercentSign(self.percentIconOutline, icon, true)
                         self.percentIconOutline:SetText("75%")
                         if pOW > 0 then self.percentIconOutline:Show() else self.percentIconOutline:Hide() end
                     end
@@ -530,6 +540,22 @@ function SQP:CreatePreviewSection(parent)
                     self.iconText:SetText("")
                     if self.iconTextOutline then self.iconTextOutline:SetText("") end
                 end
+            end
+        end
+
+
+        -- Unified mode shows the count in a level-style chip (no jellybean)
+        if self.questChip then
+            if SQPSettings.unifiedNameplates then
+                icon:Hide()
+                self.questChip:ClearAllPoints()
+                self.questChip:SetPoint("CENTER", iconText, "CENTER", 0, 0)
+                local cw = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
+                local _, ch = iconText:GetFont()
+                self.questChip:SetSize(cw + 10, (ch or 12) + 8)
+                self.questChip:Show()
+            else
+                self.questChip:Hide()
             end
         end
 

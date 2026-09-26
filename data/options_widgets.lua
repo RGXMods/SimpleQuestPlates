@@ -8,7 +8,20 @@
 local addonName, SQP = ...
 local CreateFrame = CreateFrame
 
--- Create custom styled button — delegates to RGXDesign via RGXUI
+-- Apply the framework's default font to one of SQP's ad-hoc panel font
+-- strings so menu text matches every other RGX addon. Framework fonts
+-- default to the Blizzard font.
+function SQP:ApplyDefaultFont(fontString)
+    local Fonts = _G.RGXFonts
+    if not (Fonts and type(Fonts.Apply) == "function" and type(Fonts.GetDefault) == "function") then return end
+    if not (fontString and fontString.GetFont) then return end
+    pcall(function()
+        local _, size, flags = fontString:GetFont()
+        Fonts:Apply(fontString, Fonts:GetDefault(), size, flags)
+    end)
+end
+
+-- Create custom styled button â€” delegates to RGXDesign via RGXUI
 function SQP:CreateStyledButton(parent, text, width, height)
     local UI = _G.RGXUI
     if UI and type(UI.CreateButton) == "function" then
@@ -20,7 +33,7 @@ function SQP:CreateStyledButton(parent, text, width, height)
     return button
 end
 
--- Create compact inline reset button — delegates to RGXUI
+-- Create compact inline reset button â€” delegates to RGXUI
 function SQP:CreateInlineResetButton(parent, onClickFn)
     local UI = _G.RGXUI
     if UI and type(UI.CreateResetButton) == "function" then
@@ -29,6 +42,7 @@ function SQP:CreateInlineResetButton(parent, onClickFn)
     local btn = CreateFrame("Button", nil, parent)
     btn:SetSize(20, 16)
     local lbl = btn:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(lbl)
     lbl:SetAllPoints()
     lbl:SetJustifyH("CENTER")
     lbl:SetText("R")
@@ -40,7 +54,7 @@ function SQP:CreateInlineResetButton(parent, onClickFn)
     return btn
 end
 
--- Create custom styled slider — delegates to RGXUI
+-- Create custom styled slider â€” delegates to RGXUI
 function SQP:CreateStyledSlider(parent, options)
 	local UI = _G.RGXUI
 	if UI and type(UI.CreateSlider) == "function" then
@@ -62,29 +76,50 @@ function SQP:CreateStyledSlider(parent, options)
 	return slider
 end
 
--- Create a per-type font settings section (size + family)
--- typeKey: "kill", "loot", or "percent"
+-- Attach a hover tooltip to a control (explanations stay out of panel body)
+function SQP:SetControlTooltip(widget, text)
+    if not widget or not widget.SetScript or not widget.EnableMouse then return end
+    widget:EnableMouse(true)
+    widget:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:SetText(text, 1, 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    widget:SetScript("OnLeave", function()
+        GameTooltip:Hide()
+    end)
+end
+
+-- Create a font settings section (size + family)
+-- typeKey: "kill", "loot", or "percent" for per-type overrides; nil for the
+-- global nameplate font (shared settings). Per-type sections inherit the
+-- global font until overridden on their own tab.
 -- activatePreviewFn: optional function to switch preview mode before refresh
 -- returns: next yOffset after all controls
 function SQP:CreateFontSection(parent, typeKey, yOffset, activatePreviewFn)
     if not self.optionControls then self.optionControls = {} end
 
     local Fonts = _G.RGXFonts
-    local defaultSize = typeKey == "percent" and 8 or 12
-    local defaultPath = "Fonts\\FRIZQT__.TTF"
-    local defaultName = Fonts:FindByPath(defaultPath) or Fonts:GetDefault()
+    local sizeKey   = typeKey and (typeKey .. "FontSize")   or "fontSize"
+    local familyKey = typeKey and (typeKey .. "FontFamily") or "fontFamily"
+    local defaultSize = (typeKey == "percent") and 8 or 12
+    -- Display the effective font: inherited global unless this type has an
+    -- explicit override; fall back to the framework default (Blizzard font).
+    local effectiveFamily = SQPSettings[familyKey] or SQPSettings.fontFamily
+    local defaultName = Fonts:ResolveName(effectiveFamily, Fonts:GetDefault()) or Fonts:GetDefault()
 
     -- Section header
     local fontHeader = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     fontHeader:SetPoint("TOPLEFT", 20, yOffset)
-    fontHeader:SetText("|cff58be81Font|r")
+    fontHeader:SetText("|cff58be81" .. (self.L["OPTIONS_FONT"] or "Font") .. "|r")
     fontHeader:SetFontObject(GameFontNormalSmall)
+    SQP:ApplyDefaultFont(fontHeader)
     yOffset = yOffset - 18
 
-	-- ── Font Size ──────────────────────────────────────────────────────────
-	local curSize = SQPSettings[typeKey.."FontSize"] or defaultSize
+	-- â”€â”€ Font Size â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+	local curSize = SQPSettings[sizeKey] or defaultSize
 	local sizeSlider = self:CreateStyledSlider(parent, {
-		key = typeKey.."FontSize",
+		key = sizeKey,
 		label = "Size",
 		min = 6,
 		max = 26,
@@ -97,16 +132,17 @@ function SQP:CreateFontSection(parent, typeKey, yOffset, activatePreviewFn)
 		end,
 	})
 	sizeSlider:SetPoint("TOPLEFT", 20, yOffset)
-	self.optionControls[typeKey.."FontSize"] = sizeSlider
+	self.optionControls[sizeKey] = sizeSlider
 
 	yOffset = yOffset - 38
 
-    -- ── Font Family ────────────────────────────────────────────────────────
+    -- â”€â”€ Font Family â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local familyLabel = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     familyLabel:SetPoint("TOPLEFT", 20, yOffset)
     familyLabel:SetText("Family")
+    SQP:ApplyDefaultFont(familyLabel)
     local familyReset = self:CreateInlineResetButton(parent, function()
-        local control = self.optionControls[typeKey.."FontFamily"]
+        local control = self.optionControls[familyKey]
         if control then control:Reset() end
     end)
     familyReset:SetPoint("LEFT", familyLabel, "RIGHT", 5, 0)
@@ -117,19 +153,19 @@ function SQP:CreateFontSection(parent, typeKey, yOffset, activatePreviewFn)
         buttonWidth = 160,
         showReset = false,
         storage = SQPSettings,
-        key = typeKey .. "FontFamily",
+        key = familyKey,
         defaultName = defaultName,
-        defaultPath = defaultPath,
+        defaultPath = (Fonts.GetPath and Fonts:GetPath(Fonts:GetDefault())) or "Fonts\\FRIZQT__.TTF",
         onChange = function(_, _, fontPath)
             if type(fontPath) == "string" then
                 fontPath = fontPath:gsub("/", "\\")
             end
-            SQP:SetSetting(typeKey .. "FontFamily", fontPath)
+            SQP:SetSetting(familyKey, fontPath)
             SQP:RefreshFontDisplays(activatePreviewFn)
         end,
     })
     fontControl:SetPoint("TOPLEFT", 20, yOffset)
-    self.optionControls[typeKey.."FontFamily"] = fontControl
+    self.optionControls[familyKey] = fontControl
 
     yOffset = yOffset - 30
 
@@ -154,6 +190,7 @@ function SQP:CreateDisplayStyleSection(parent, typeKey, activatePreviewFn, yOffs
     local settingKey = typeKey and (typeKey .. "ShowIconBackground") or "showIconBackground"
 
     local dsHeader = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    SQP:ApplyDefaultFont(dsHeader)
     dsHeader:SetPoint("TOPLEFT", 20, yOffset)
     dsHeader:SetText("|cff58be81Display Style|r")
     dsHeader:SetFontObject(GameFontNormalSmall)
@@ -215,7 +252,7 @@ function SQP:CreateDisplayStyleSection(parent, typeKey, activatePreviewFn, yOffs
 end
 
 -- Create a per-type mini icon tint section (kill or loot task icons)
--- Compact single-row: [Swatch] [☑ Tint Icon] [Reset]
+-- Compact single-row: [Swatch] [â˜‘ Tint Icon] [Reset]
 -- typeKey: "kill" or "loot"
 -- returns: next yOffset
 function SQP:CreateMiniIconTintSection(parent, typeKey, activatePreviewFn, yOffset)
@@ -301,6 +338,7 @@ function SQP:CreateMainIconSection(parent, typeKey, activatePreviewFn, yOffset, 
 
     -- Section header (tight gap)
     local header = parent:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    SQP:ApplyDefaultFont(header)
     header:SetPoint("TOPLEFT", 20, yOffset)
     header:SetText("|cff58be81Main Icon|r")
     header:SetFontObject(GameFontNormalSmall)
@@ -319,7 +357,7 @@ function SQP:CreateMainIconSection(parent, typeKey, activatePreviewFn, yOffset, 
         yOffset = yOffset - 26
     end
 
-    -- Inline tint row: [Swatch] [☑ Tint Main Icon] [Reset]
+    -- Inline tint row: [Swatch] [â˜‘ Tint Main Icon] [Reset]
     local tintColorBtn = CreateFrame("Button", nil, parent)
     tintColorBtn:SetSize(20, 20)
     tintColorBtn:SetPoint("TOPLEFT", 20, yOffset)
@@ -388,6 +426,14 @@ function SQP:CreateStyledCheckbox(parent, text)
     checkbox:SetCheckedTexture("Interface\\Buttons\\UI-CheckBox-Check")
 
     local label = frame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(label)
+    do
+        local Fonts = _G.RGXFonts
+        if Fonts and type(Fonts.Apply) == "function" and type(Fonts.GetDefault) == "function" then
+            local _, size, flags = label:GetFont()
+            pcall(Fonts.Apply, Fonts, label, Fonts:GetDefault(), size, flags)
+        end
+    end
     label:SetPoint("LEFT", checkbox, "RIGHT", 5, 0)
     label:SetText(text)
 
@@ -395,4 +441,68 @@ function SQP:CreateStyledCheckbox(parent, text)
     frame.label = label
 
     return frame
+end
+
+-- Create centered two-column layout for an options page. Delegates to the
+-- framework's shared column system when available (RGX-Framework >= 2.7.9)
+-- so every RGX addon's option pages center the same way.
+function SQP:CreateOptionColumns(content, colWidth, gap)
+    local UI = _G.RGXUI
+    if UI and type(UI.CreateColumns) == "function" then
+        return UI:CreateColumns(content, 2, { colWidth = colWidth, gap = gap })
+    end
+    -- Fallback: legacy flush-left/right columns
+    local leftColumn = CreateFrame("Frame", nil, content)
+    leftColumn:SetPoint("TOPLEFT")
+    leftColumn:SetPoint("BOTTOMLEFT")
+    leftColumn:SetWidth(colWidth or 288)
+    local rightColumn = CreateFrame("Frame", nil, content)
+    rightColumn:SetPoint("TOPRIGHT")
+    rightColumn:SetPoint("BOTTOMRIGHT")
+    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", gap or 14, 0)
+    return leftColumn, rightColumn
+end
+
+-- Per-type task icon side section (kill / loot): Left / Right buttons
+-- choosing which side of the quest display the mini icon badge sits on.
+function SQP:CreateIconSideSection(parent, typeKey, activatePreviewFn, yOffset)
+    if not self.optionControls then self.optionControls = {} end
+    local sideKey = typeKey .. "IconSide"
+    local defaultSide = (typeKey == "kill") and "left" or "right"
+    local labelText = (typeKey == "kill") and "Kill Icon Side" or "Loot Icon Side"
+
+    local sideHeader = parent:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(sideHeader)
+    sideHeader:SetPoint("TOPLEFT", 20, yOffset)
+    sideHeader:SetText("|cff58be81" .. labelText .. "|r")
+    yOffset = yOffset - 16
+
+    local leftSideBtn = self:CreateStyledButton(parent, "Left", 64, 20)
+    local rightSideBtn = self:CreateStyledButton(parent, "Right", 64, 20)
+    leftSideBtn:SetPoint("TOPLEFT", 20, yOffset)
+    rightSideBtn:SetPoint("LEFT", leftSideBtn, "RIGHT", 6, 0)
+
+    local function UpdateSideButtons()
+        local current = SQPSettings[sideKey] or defaultSide
+        leftSideBtn:SetAlpha(current == "left" and 1 or 0.6)
+        rightSideBtn:SetAlpha(current == "right" and 1 or 0.6)
+    end
+    UpdateSideButtons()
+    self.optionControls[sideKey .. "SideUpdater"] = UpdateSideButtons
+
+    leftSideBtn:SetScript("OnClick", function()
+        SQP:SetSetting(sideKey, "left")
+        UpdateSideButtons()
+        if activatePreviewFn then activatePreviewFn() end
+        SQP:RefreshAllNameplates()
+    end)
+    rightSideBtn:SetScript("OnClick", function()
+        SQP:SetSetting(sideKey, "right")
+        UpdateSideButtons()
+        if activatePreviewFn then activatePreviewFn() end
+        SQP:RefreshAllNameplates()
+    end)
+
+    yOffset = yOffset - 26
+    return yOffset
 end

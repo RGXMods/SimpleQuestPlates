@@ -64,11 +64,133 @@ local function setFontSafe(fontString, fontPath, fontSize, fontFlags)
     return false
 end
 
+-- Position the percent sign ("icon" mode) or the combined percent text
+-- ("text" mode). In icon mode the side setting controls placement: hugging
+-- the number's left/right side, or in the kill/loot mini-icon badge slots.
+-- The offset sliders still apply on top (right/left modes treat X as the
+-- distance from the number; badge modes mirror the kill/loot anchors).
+function SQP:AnchorPercentSign(percentIcon, icon, textMode)
+    if not percentIcon or not icon then
+        return
+    end
+    local offX = SQPSettings.percentIconOffsetX or 18
+    local offY = SQPSettings.percentIconOffsetY or 0
+    percentIcon:ClearAllPoints()
+    if textMode then
+        percentIcon:SetPoint('CENTER', icon, offX, offY)
+        return
+    end
+    local side = SQPSettings.percentSignSide or "right"
+    if side == "left" then
+        percentIcon:SetPoint('CENTER', icon, -offX, offY)
+    else
+        percentIcon:SetPoint('CENTER', icon, offX, offY)
+    end
+end
+
+-- Position the kill/loot task icons relative to the main quest icon.
+-- Side flips the badge between the lower-left and lower-right slots; the
+-- per-type X/Y offsets fine-tune from there.
+function SQP:AnchorTaskIcon(iconTex, icon, typeKey)
+    if not iconTex or not icon then return end
+    local x = SQPSettings[typeKey .. "IconOffsetX"]
+    if x == nil then x = (typeKey == "loot") and -38 or 2 end
+    local y = SQPSettings[typeKey .. "IconOffsetY"]
+    if y == nil then y = (typeKey == "loot") and 16 or 15 end
+    local side = SQPSettings[typeKey .. "IconSide"]
+    if side == nil then side = (typeKey == "kill") and "left" or "right" end
+    iconTex:ClearAllPoints()
+    if side == "left" then
+        iconTex:SetPoint('TOPRIGHT', icon, 'BOTTOMLEFT', x, y)
+    else
+        iconTex:SetPoint('TOPLEFT', icon, 'BOTTOMRIGHT', x, y)
+    end
+end
+
+-- Unified mode shows the count in a native level-display style chip (dark
+-- backdrop box hugging the number) instead of the floating jellybean. The
+-- chip resizes to fit the current text on every update.
+function SQP:UpdateUnifiedChip(questFrame)
+    local chip = questFrame and questFrame.levelChip
+    if not chip then
+        return
+    end
+    local iconText = questFrame.iconText
+    if not iconText or not iconText.IsShown or not iconText:IsShown() then
+        chip:Hide()
+        return
+    end
+    local text = iconText:GetText()
+    if not text or text == "" then
+        chip:Hide()
+        return
+    end
+    chip:ClearAllPoints()
+    chip:SetPoint("CENTER", iconText, "CENTER", 0, 0)
+    local w = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
+    local _, h = iconText:GetFont()
+    chip:SetSize(w + 10, (h or 12) + 8)
+    chip:SetColorTexture(0, 0, 0, 0.55)
+    chip:Show()
+end
+
+-- Play all pulses on a plate in phase: stop them all, then start them all in
+-- the same tick so the main/kill/loot animations move together.
+function SQP:SyncQuestPulses(questFrame)
+    if not questFrame then return end
+    local pulses = { questFrame.iconPulse, questFrame.percentPulse,
+        questFrame.percentOutlinePulse, questFrame.killIconPulse, questFrame.lootIconPulse }
+    for _, p in ipairs(pulses) do
+        if p and p.Stop then p:Stop() end
+    end
+    for _, p in ipairs(pulses) do
+        local region = p and p.GetParent and p:GetParent()
+        if p and region and region.IsShown and region:IsShown() then p:Play() end
+    end
+end
+
 -- Nameplate storage
 SQP.Nameplates = {} -- [plate] = frame
 SQP.ActiveNameplates = {} -- [plate] = frame (visible only)
 SQP.PlateGUIDs = {} -- [guid] = plate
 SQP.QuestPlates = {} -- [plate] = questFrame
+
+-- ── Unified nameplates ─────────────────────────────────────────────────────────
+-- When enabled, quest overlays are parented to Blizzard's own UnitFrame and
+-- anchored to its HealthBarsContainer (the technique MelloUI uses), so they
+-- move, scale and fade with the native nameplate instead of floating beside
+-- the plate boundary.
+
+function SQP:IsUnifiedMode(nameplate)
+    if SQPSettings.unifiedNameplates ~= true then
+        return false
+    end
+    if not nameplate or not nameplate.UnitFrame then
+        return false
+    end
+    if nameplate.UnitFrame.IsForbidden and nameplate.UnitFrame:IsForbidden() then
+        return false
+    end
+    return true
+end
+
+-- The frame quest icons anchor against. Both modes prefer Blizzard's health
+-- bar container so icons start flush with the bar by default (the outer
+-- plate boundary moves around with cast bars and buff space, which is why
+-- the old defaults never looked aligned). Older clients without those
+-- internals fall back to the outer plate.
+function SQP:GetPlateAnchorTarget(plate)
+    local uf = plate and plate.UnitFrame
+    if uf and not (uf.IsForbidden and uf:IsForbidden()) then
+        if uf.HealthBarsContainer then
+            return uf.HealthBarsContainer
+        end
+        if uf.healthBar then
+            return uf.healthBar
+        end
+    end
+    return plate
+end
 
 -- Create quest plate frame for new nameplates
 function SQP:CreateQuestPlate(nameplate)
@@ -76,14 +198,36 @@ function SQP:CreateQuestPlate(nameplate)
     if self.QuestPlates[nameplate] then
         return
     end
-    
+
     -- Store reference to nameplate frame
     self.Nameplates[nameplate] = nameplate
-    
-    -- Create quest overlay directly on nameplate
-    local questFrame = CreateFrame('frame', nil, nameplate)
+
+    local unified = self:IsUnifiedMode(nameplate)
+    local parent = unified and nameplate.UnitFrame or nameplate
+
+    -- Create quest overlay on the plate (or inside Blizzard's UnitFrame)
+    local questFrame = CreateFrame('frame', nil, parent)
     questFrame:Hide()
-    questFrame:SetAllPoints(nameplate)
+    questFrame:SetAllPoints(parent)
+    questFrame:EnableMouse(false)
+    if unified then
+        -- Draw above the health bar and its kit regions (gem caps etc.)
+        local hb = nameplate.UnitFrame.HealthBarsContainer
+            and nameplate.UnitFrame.HealthBarsContainer.healthBar
+        local ok, level = pcall(function()
+            return (hb or nameplate.UnitFrame):GetFrameLevel()
+        end)
+        if ok and type(level) == "number" then
+            questFrame:SetFrameLevel(level + 5)
+        end
+
+        -- Level-display style chip behind the count text (the unified look:
+        -- a dark backdrop hugging the number, like Blizzard's unit level).
+        local chip = questFrame:CreateTexture(nil, "OVERLAY", nil, 0)
+        chip:SetColorTexture(0, 0, 0, 0.55)
+        chip:Hide()
+        questFrame.levelChip = chip
+    end
     self.QuestPlates[nameplate] = questFrame
     
     -- Quest icon (jellybean)
@@ -91,13 +235,15 @@ function SQP:CreateQuestPlate(nameplate)
     icon:SetSize(28, 22)
     icon:SetTexture('Interface/QuestFrame/AutoQuest-Parts')
     icon:SetTexCoord(0.30273438, 0.41992188, 0.015625, 0.953125)
+    local anchorTarget = self:GetPlateAnchorTarget(nameplate)
     icon:SetPoint(
         SQPSettings.anchor or 'RIGHT', 
-        nameplate, 
+        anchorTarget, 
         SQPSettings.relativeTo or 'LEFT', 
-        SQPSettings.offsetX or 0, 
+        SQPSettings.offsetX or 0,
         SQPSettings.offsetY or 0
     )
+    questFrame._anchorTarget = anchorTarget
     questFrame.icon = icon
 
     -- Dramatic pulse for main quest icon (more noticeable)
@@ -155,13 +301,7 @@ function SQP:CreateQuestPlate(nameplate)
 
     -- Kill quest icon (hostile cursor knife/sword)
     local killIcon = questFrame:CreateTexture(nil, "OVERLAY", nil, 1)
-    killIcon:SetPoint(
-        'TOPRIGHT',
-        icon,
-        'BOTTOMLEFT',
-        SQPSettings.killIconOffsetX or 12,
-        SQPSettings.killIconOffsetY or 12
-    )
+    self:AnchorTaskIcon(killIcon, icon, "kill")
     killIcon:SetSize(SQPSettings.killIconSize or 16, SQPSettings.killIconSize or 16)
     killIcon:SetTexture('Interface/Cursor/Attack')
     if not killIcon:GetTexture() then
@@ -181,13 +321,7 @@ function SQP:CreateQuestPlate(nameplate)
         lootIcon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
     end
     lootIcon:SetSize(SQPSettings.lootIconSize or 16, SQPSettings.lootIconSize or 16)
-    lootIcon:SetPoint(
-        'TOPLEFT',
-        icon,
-        'BOTTOMRIGHT',
-        SQPSettings.lootIconOffsetX or -12,
-        SQPSettings.lootIconOffsetY or 12
-    )
+    self:AnchorTaskIcon(lootIcon, icon, "loot")
     lootIcon:Hide()
     questFrame.lootIcon = lootIcon
     questFrame.lootIconPulse = CreatePulse(lootIcon)
@@ -215,7 +349,7 @@ function SQP:CreateQuestPlate(nameplate)
     if percentIcon.SetDrawLayer then
         percentIcon:SetDrawLayer('OVERLAY', 2)
     end
-    percentIcon:SetPoint('CENTER', icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+    self:AnchorPercentSign(percentIcon, icon, false)
     percentIcon:SetTextColor(0.2, 1, 1)
     percentIcon:Hide()
 
@@ -223,7 +357,7 @@ function SQP:CreateQuestPlate(nameplate)
     if percentIconOutline.SetDrawLayer then
         percentIconOutline:SetDrawLayer('OVERLAY', 1)
     end
-    percentIconOutline:SetPoint('CENTER', icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+    self:AnchorPercentSign(percentIconOutline, icon, false)
     percentIconOutline:SetTextColor(0, 0, 0, 1)
     percentIconOutline:Hide()
 
@@ -238,13 +372,14 @@ function SQP:CreateQuestPlate(nameplate)
     questFrame.percentPulse = CreatePulse(percentIcon)
     questFrame.percentOutlinePulse = CreatePulse(percentIconOutline)
     
-    -- Quest complete animation
+    -- Quest complete animation (quick "pops" when the quest frame shows)
     local qmark = questFrame:CreateTexture(nil, 'OVERLAY', nil, 7)
-    qmark:SetSize(28, 28)
+    qmark:SetSize(SQPSettings.questMarkerSize or 28, SQPSettings.questMarkerSize or 28)
     qmark:SetPoint('CENTER', icon)
     qmark:SetTexture('Interface/WorldMap/UI-WorldMap-QuestIcon')
     qmark:SetTexCoord(0, 0.56, 0.5, 1)
     qmark:SetAlpha(0)
+    questFrame.qmark = qmark
     
     local duration = 1
     local group = qmark:CreateAnimationGroup()
@@ -270,8 +405,76 @@ function SQP:CreateQuestPlate(nameplate)
     questFrame.ani = group
     
     questFrame:HookScript('OnShow', function(self)
-        group:Play()
+        if SQPSettings.showQuestMarker ~= false then
+            group:Play()
+        else
+            qmark:SetAlpha(0)
+        end
+        if SQPSettings.syncAnimations then
+            SQP:SyncQuestPulses(self)
+        end
     end)
+end
+
+-- Ensure a quest overlay exists for this plate and matches the current mode.
+-- In unified mode the UnitFrame can be replaced by Blizzard on plate reuse,
+-- so a cached overlay parented to a stale UnitFrame must be rebuilt.
+function SQP:EnsureQuestPlate(nameplate)
+    local questFrame = self.QuestPlates[nameplate]
+    if questFrame and SQPSettings.unifiedNameplates then
+        local expectedParent = nameplate.UnitFrame
+        if expectedParent and questFrame:GetParent() ~= expectedParent then
+            questFrame:Hide()
+            pcall(function() questFrame:SetParent(nil) end)
+            self.QuestPlates[nameplate] = nil
+        end
+    end
+    if not self.QuestPlates[nameplate] then
+        self:CreateQuestPlate(nameplate)
+    end
+
+    -- Re-anchor when Blizzard recycled the plate's internals (pool reuse,
+    -- death/resurrection, style swaps): the icon may still point at a stale
+    -- health bar container that no longer belongs to this plate.
+    self:RefreshQuestPlateAnchor(nameplate)
+end
+
+-- Re-anchor the quest icon when its anchor target frame was replaced
+function SQP:RefreshQuestPlateAnchor(nameplate)
+    local questFrame = self.QuestPlates[nameplate]
+    if not questFrame or not questFrame.icon then
+        return
+    end
+
+    local target = self:GetPlateAnchorTarget(nameplate)
+    if questFrame._anchorTarget ~= target then
+        questFrame.icon:ClearAllPoints()
+        questFrame.icon:SetPoint(
+            SQPSettings.anchor or 'RIGHT',
+            target,
+            SQPSettings.relativeTo or 'LEFT',
+            SQPSettings.offsetX or 0,
+            SQPSettings.offsetY or 0
+        )
+        questFrame._anchorTarget = target
+    end
+end
+
+-- Rebuild every quest overlay after switching unified/legacy mode
+function SQP:RebuildQuestPlates()
+    local active = {}
+    for plate in pairs(self.ActiveNameplates) do
+        table.insert(active, plate)
+    end
+    for _, questFrame in pairs(self.QuestPlates) do
+        questFrame:Hide()
+        pcall(function() questFrame:SetParent(nil) end)
+    end
+    self.QuestPlates = {}
+    for _, plate in ipairs(active) do
+        self:CreateQuestPlate(plate)
+        self:UpdateQuestIcon(plate, plate._unitID)
+    end
 end
 
 -- Nameplate show callback
@@ -282,9 +485,7 @@ function SQP:OnPlateShow(nameplate, unitID)
     nameplate._unitID = unitID
     self.ActiveNameplates[nameplate] = nameplate
 
-    if not self.QuestPlates[nameplate] then
-        self:CreateQuestPlate(nameplate)
-    end
+    self:EnsureQuestPlate(nameplate)
     
     local ok, guid = pcall(UnitGUID, unitID)
     if ok and guid then
@@ -331,7 +532,10 @@ function SQP:UpdateQuestFont(fontString, outlineFontString, percentFontString, p
     local S = SQPSettings or {}
 
     local function applyFont(main, outline, tk, sizeOverride)
-        local requestedFont = (tk and S[tk.."FontFamily"]) or S.fontFamily or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
+        local Fonts = _G.RGXFonts
+        local rgxDefaultFont = (Fonts and type(Fonts.GetDefault) == "function" and Fonts:GetDefault()) or nil
+        local requestedFont = (tk and S[tk.."FontFamily"]) or S.fontFamily or rgxDefaultFont
+            or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF"
         local fontName    = requestedFont
         local fontSize    = sizeOverride or (tk and S[tk.."FontSize"]) or S.fontSize or 12
         local fontOutline = (tk and S[tk.."FontOutline"])  or S.fontOutline or ""
@@ -345,9 +549,8 @@ function SQP:UpdateQuestFont(fontString, outlineFontString, percentFontString, p
         if noOutline then outlineWidth = 0 end
         if outlineWidth < 0 then outlineWidth = 0 end
 
-        local Fonts = _G.RGXFonts
         if Fonts and type(Fonts.ResolvePath) == "function" then
-            fontName = Fonts:ResolvePath(requestedFont, S.fontFamily or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
+            fontName = Fonts:ResolvePath(requestedFont, rgxDefaultFont or STANDARD_TEXT_FONT or "Fonts\\FRIZQT__.TTF")
         end
         fontName = normalizeFontPath(fontName)
 
@@ -407,35 +610,28 @@ function SQP:RefreshAllNameplates()
             end
 
             questFrame.icon:ClearAllPoints()
+            local refreshTarget = self:GetPlateAnchorTarget(plate)
             questFrame.icon:SetPoint(
                 SQPSettings.anchor or 'RIGHT',
-                plate,
+                refreshTarget,
                 SQPSettings.relativeTo or 'LEFT',
                 SQPSettings.offsetX or 0,
                 SQPSettings.offsetY or 0
             )
+            questFrame._anchorTarget = refreshTarget
             questFrame:SetScale(SQPSettings.scale or 1)
 
+            if questFrame.qmark then
+                local qms = SQPSettings.questMarkerSize or 28
+                questFrame.qmark:SetSize(qms, qms)
+            end
+
             if questFrame.killIcon then
-                questFrame.killIcon:ClearAllPoints()
-                questFrame.killIcon:SetPoint(
-                    'TOPRIGHT',
-                    questFrame.icon,
-                    'BOTTOMLEFT',
-                    SQPSettings.killIconOffsetX or 12,
-                    SQPSettings.killIconOffsetY or 12
-                )
+                self:AnchorTaskIcon(questFrame.killIcon, questFrame.icon, "kill")
                 questFrame.killIcon:SetSize(SQPSettings.killIconSize or 16, SQPSettings.killIconSize or 16)
             end
             if questFrame.lootIcon then
-                questFrame.lootIcon:ClearAllPoints()
-                questFrame.lootIcon:SetPoint(
-                    'TOPLEFT',
-                    questFrame.icon,
-                    'BOTTOMRIGHT',
-                    SQPSettings.lootIconOffsetX or -12,
-                    SQPSettings.lootIconOffsetY or 12
-                )
+                self:AnchorTaskIcon(questFrame.lootIcon, questFrame.icon, "loot")
                 questFrame.lootIcon:SetSize(SQPSettings.lootIconSize or 16, SQPSettings.lootIconSize or 16)
             end
             
@@ -518,8 +714,7 @@ function SQP:RefreshAllNameplates()
             if questFrame.percentIcon then
                 if questFrame.questType == 3 then
                     local percentIconMode = IsIconStyleEnabled("percent")
-                    questFrame.percentIcon:ClearAllPoints()
-                    questFrame.percentIcon:SetPoint('CENTER', questFrame.icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+                    self:AnchorPercentSign(questFrame.percentIcon, questFrame.icon, not percentIconMode)
                     if SQPSettings.percentTintIcon and SQPSettings.percentTintIconColor then
                         local r, g, b, a = unpack(SQPSettings.percentTintIconColor)
                         questFrame.percentIcon:SetTextColor(r, g, b, a or 1)
@@ -528,8 +723,7 @@ function SQP:RefreshAllNameplates()
                     end
                     questFrame.percentIcon:Show()
                     if questFrame.percentIconOutline then
-                        questFrame.percentIconOutline:ClearAllPoints()
-                        questFrame.percentIconOutline:SetPoint('CENTER', questFrame.icon, SQPSettings.percentIconOffsetX or 0, SQPSettings.percentIconOffsetY or 0)
+                        self:AnchorPercentSign(questFrame.percentIconOutline, questFrame.icon, not percentIconMode)
                         local outlineWidth = SQP:GetOutlineInfo("percent")
                         if outlineWidth and outlineWidth > 0 then
                             questFrame.percentIconOutline:Show()

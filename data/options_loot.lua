@@ -10,17 +10,9 @@ local addonName, SQP = ...
 function SQP:CreateLootOptions(content)
     if not self.optionControls then self.optionControls = {} end
 
-    local leftColumn = CreateFrame("Frame", nil, content)
-    leftColumn:SetPoint("TOPLEFT")
-    leftColumn:SetPoint("BOTTOMLEFT")
-    leftColumn:SetWidth(288)
+    local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
-    local rightColumn = CreateFrame("Frame", nil, content)
-    rightColumn:SetPoint("TOPRIGHT")
-    rightColumn:SetPoint("BOTTOMRIGHT")
-    rightColumn:SetPoint("LEFT", leftColumn, "RIGHT", 14, 0)
-
-    -- ── Slider helper ─────────────────────────────────────────────────────────
+    -- â”€â”€ Slider helper â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     local function MakeSlider(parent, labelText, key, defaultVal, minVal, maxVal, yOff)
         local slider = SQP:CreateStyledSlider(parent, {
             key = key,
@@ -50,10 +42,11 @@ function SQP:CreateLootOptions(content)
         end
     end
 
-    -- ── LEFT COLUMN ────────────────────────────────────────────────────────────
-    local yOffset = -15
+    -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    local yOffset = -12
 
     local header = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(header)
     header:SetPoint("TOPLEFT", 20, yOffset)
     header:SetText("|cff58be81Loot Icon|r")
     yOffset = yOffset - 16
@@ -75,6 +68,7 @@ function SQP:CreateLootOptions(content)
 
     -- Animate Task Icons
     local animHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(animHeader)
     animHeader:SetPoint("TOPLEFT", 20, yOffset)
     animHeader:SetText("|cff58be81Animate|r")
     yOffset = yOffset - 16
@@ -129,6 +123,7 @@ function SQP:CreateLootOptions(content)
 
     -- Loot Color
     local colorHeader = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(colorHeader)
     colorHeader:SetPoint("TOPLEFT", 20, yOffset)
     colorHeader:SetText("|cff58be81Color|r")
     yOffset = yOffset - 16
@@ -145,6 +140,7 @@ function SQP:CreateLootOptions(content)
     SQP.optionControls.lootColorSwatch = sw
 
     local colorLbl = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(colorLbl)
     colorLbl:SetPoint("LEFT", colorBtn, "RIGHT", 6, 0)
     colorLbl:SetText("Loot Color")
 
@@ -174,10 +170,11 @@ function SQP:CreateLootOptions(content)
     -- Loot Icon Tinting (mini icon, compact inline row)
     yOffset = self:CreateMiniIconTintSection(leftColumn, "loot", ActivateLoot, yOffset)
 
-    -- ── RIGHT COLUMN ──────────────────────────────────────────────────────────
-    local rightYOffset = -15
+    -- â”€â”€ RIGHT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    local rightYOffset = -12
 
     local posHeader = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    SQP:ApplyDefaultFont(posHeader)
     posHeader:SetPoint("TOPLEFT", 20, rightYOffset)
     posHeader:SetText("|cff58be81Size & Position|r")
     rightYOffset = rightYOffset - 16
@@ -185,6 +182,8 @@ function SQP:CreateLootOptions(content)
     rightYOffset = MakeSlider(rightColumn, "Size",     "lootIconSize",    14,   8,  40, rightYOffset)
     rightYOffset = MakeSlider(rightColumn, "Offset X", "lootIconOffsetX", -38, -80, 80, rightYOffset)
     rightYOffset = MakeSlider(rightColumn, "Offset Y", "lootIconOffsetY",  16, -80, 80, rightYOffset)
+
+    rightYOffset = self:CreateIconSideSection(rightColumn, "loot", ActivateLoot, rightYOffset)
 
     -- Reset this tab to loot defaults
     rightYOffset = rightYOffset - 14
@@ -206,6 +205,8 @@ function SQP:CreateLootOptions(content)
         SQP:SetSetting('lootIconOffsetY',   D.lootIconOffsetY)
         SQP:SetSetting('lootFontSize',      D.lootFontSize)
         SQP:SetSetting('lootFontFamily',    D.lootFontFamily)
+        SQP:SetSetting('lootIconSide',      D.lootIconSide)
+        if oc.lootIconSideSideUpdater then oc.lootIconSideSideUpdater() end
         -- Update checkboxes
         if oc.showLootIcon         then oc.showLootIcon:SetChecked(D.showLootIcon) end
         if oc.lootShowIconBackgroundStyleUpdater then oc.lootShowIconBackgroundStyleUpdater() end
