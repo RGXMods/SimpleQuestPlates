@@ -122,10 +122,10 @@ local function ObjectiveTextMatchesUnit(objText, unitNameNorm, objectiveType)
     if objectiveType == "item" or objectiveType == "object" then
         return overlap >= 1
     end
-    if #listA <= 1 or #listB <= 1 then
-        return overlap >= 1
-    end
-    return overlap >= 2
+    -- Kill/other objectives must name the unit's class noun (its final name
+    -- token) so same-family mobs do not cross-match: Rot Hide Gnoll must not
+    -- pick up Rot Hide Mongrel or Rot Hide Graverobber objectives and vice versa.
+    return setA[listB[#listB]] == true
 end
 
 local function FindObjectiveTypeForText(text)
@@ -252,6 +252,18 @@ function SQP:GetQuestProgress(unitID)
                     text = nil
                 end
             end
+            if lineType == nil and type(text) == "string" then
+                -- Legacy untyped tooltip rows: accept only genuine objective
+                -- text for this unit (or item/objective lines the tooltip
+                -- already scoped to the unit). Completed parts parse to zero
+                -- remaining and are rejected here.
+                local lineRemaining = GetRemainingFromObjectiveText(text)
+                local lineTypeGuess = FindObjectiveTypeForText(text)
+                local lineNameMatched = ObjectiveTextMatchesUnit(text, unitNameNorm)
+                if not (lineRemaining and lineRemaining > 0 and (lineNameMatched or lineTypeGuess == "item" or lineTypeGuess == "object")) then
+                    text = nil
+                end
+            end
             if type(text) ~= "string" then
                 text = text and tostring(text) or nil
             end
@@ -271,7 +283,7 @@ function SQP:GetQuestProgress(unitID)
         end
 
         if #tooltipObjectives > 0 then
-            local chosen = tooltipObjectives[1]
+            local chosen = nil
             if unitNameNorm then
                 for _, tooltipObj in ipairs(tooltipObjectives) do
                     local tNorm = NormalizeObjectiveText(tooltipObj.text)
@@ -281,18 +293,29 @@ function SQP:GetQuestProgress(unitID)
                     end
                 end
             end
-
-            local objType = FindObjectiveTypeForText(chosen.text)
-            if objType == "item" or objType == "object" then
-                itemsNeeded = chosen.amountNeeded
-            else
-                objectiveCount = chosen.amountNeeded
+            if not chosen then
+                for _, tooltipObj in ipairs(tooltipObjectives) do
+                    local tType = FindObjectiveTypeForText(tooltipObj.text)
+                    if tType == "item" or tType == "object" then
+                        chosen = tooltipObj
+                        break
+                    end
+                end
             end
-            progressGlob = chosen.text
-            if chosen.isPercent then
-                questType = 3
-            else
-                questType = questType or 1
+
+            if chosen then
+                local objType = FindObjectiveTypeForText(chosen.text)
+                if objType == "item" or objType == "object" then
+                    itemsNeeded = chosen.amountNeeded
+                else
+                    objectiveCount = chosen.amountNeeded
+                end
+                progressGlob = chosen.text
+                if chosen.isPercent then
+                    questType = 3
+                else
+                    questType = questType or 1
+                end
             end
         end
     end
@@ -305,8 +328,13 @@ function SQP:GetQuestProgress(unitID)
             if not questID and not questLogIndex then return end
             local objectives = SQP.Compat.GetQuestObjectives(questID, questLogIndex)
             for _, obj in ipairs(objectives) do
-                if obj.text and ObjectiveTextMatchesUnit(obj.text, unitNameNorm, obj.type) then
+                local objFinished = obj.isFinished or obj.finished
+                if obj.text and not objFinished and ObjectiveTextMatchesUnit(obj.text, unitNameNorm, obj.type) then
                     local numLeft, isPercent = GetRemainingFromObjectiveText(obj.text)
+                    if not numLeft and obj.numRequired and obj.numFulfilled then
+                        local remaining = (tonumber(obj.numRequired) or 0) - (tonumber(obj.numFulfilled) or 0)
+                        if remaining > 0 then numLeft = remaining end
+                    end
                     if numLeft and numLeft > 0 then
                         if obj.type == 'item' or obj.type == 'object' then
                             if numLeft > itemsNeeded then itemsNeeded = numLeft end
