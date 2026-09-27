@@ -12,6 +12,7 @@
 ## RequiredDeps: RGX-Framework
 
 ## X-Category: UI Media, Questing & Leveling, Miscellaneous
+## X-Localizations: enUS, enGB, deDE, esES, esMX, frFR, itIT, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
 ## X-Website: https://github.com/RGXMods/SimpleQuestPlates
 ## X-Curse-Project-ID: 1319776
 
