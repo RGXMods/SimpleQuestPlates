@@ -54,7 +54,7 @@ function SQP:CreateAboutSection(content)
     local discordIcon = communityFrame:CreateTexture(nil, "ARTWORK")
     discordIcon:SetSize(34, 34)
     discordIcon:SetPoint("LEFT", 10, 0)
-    discordIcon:SetTexture("Interface\\AddOns\\SimpleQuestPlates\\media\\logo.tga")
+    discordIcon:SetTexture(SQP.ICON_TEXTURE)
 
     local discordTitle = communityFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(discordTitle)
