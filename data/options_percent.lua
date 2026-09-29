@@ -54,7 +54,7 @@ function SQP:CreatePercentOptions(content)
     -- Show Percent Icon
     local showFrame = self:CreateStyledCheckbox(leftColumn, "Show Percent Icon")
     showFrame:SetPoint("TOPLEFT", 20, yOffset)
-    showFrame.checkbox:SetChecked(SQPSettings.showPercentIcon ~= false)
+    showFrame.checkbox:SetChecked(SQPSettings.showPercentIcon == true)
     self.optionControls.showPercentIcon = showFrame.checkbox
     showFrame.checkbox:SetScript("OnClick", function(self)
         SQP:SetSetting('showPercentIcon', self:GetChecked())
