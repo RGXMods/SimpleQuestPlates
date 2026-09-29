@@ -143,7 +143,7 @@ _<span style="color:#e67e23">Every donation helps fund new features and improvem
 |---|---|---|---|
 | English (enUS) | English EU (enGB) | Deutsch (deDE) | Español (esES/esMX) |
 | Français (frFR) | Italiano (itIT) | 한국어 (koKR) | Português Brasil (ptBR) |
-| Русский (ruRU) | 简体中文 (zhCN) | 繁體中文 (zhTW) | |
+| Português (ptPT) | Русский (ruRU) | 简体中文 (zhCN) | 繁體中文 (zhTW) |
 
 </div>
 
