@@ -1,3 +1,10 @@
+# v2.1.7-beta.2 - 2026-09-29
+
+## Changes
+- Match quest progress to the correct unfinished objective rather than an unrelated unit with shared name words.
+- Disable the percent icon and its background by default; keep the preview and options toggle synchronized.
+- Use the configured addon icon consistently in the options panel and update the Retail interface target.
+
 # v2.1.7-beta.1 - 2026-09-25
 
 ## Changes
@@ -49,7 +56,7 @@
 ## Changes
 
 - Migrated all sliders to the RGX Framework `UI:CreateSlider` with custom track-style design using RGX brand colors.
-- Removed per-slider manual label, reset button, and OnValueChanged boilerplate — the framework now handles all of this internally.
+- Removed per-slider manual label, reset button, and OnValueChanged boilerplate ï¿½ the framework now handles all of this internally.
 - `SQP:CreateStyledSlider` now delegates to `UI:CreateSlider` when RGXUI is available, with fallback to the old Blizzard slider.
 - Sliders support click, drag, scroll wheel, and show value label on hover.
 - Net reduction of ~160 lines of manual slider setup code across all options files.
