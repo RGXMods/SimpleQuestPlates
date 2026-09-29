@@ -493,7 +493,7 @@ function SQP:CreatePreviewSection(parent)
             if self.lootIcon then self.lootIcon:Hide() end
             if self.killIcon  then self.killIcon:Hide()  end
 
-            if SQPSettings.showPercentIcon ~= false then
+            if SQPSettings.showPercentIcon == true then
                 local pOW   = SQP:GetOutlineInfo("percent")
                 if percentIconMode then
                     -- Icon mode: jellybean + number + "%" at configured side
