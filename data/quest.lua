@@ -67,7 +67,11 @@ local function NormalizeObjectiveText(text)
     text = text:gsub("%b()", "")
     text = text:gsub("%d+%s*/%s*%d+", "")
     text = text:gsub("[%d%.]+%%", "")
-    text = text:gsub("[•·%-–—:]", " ")
+    text = text:gsub("[%-:]", " ")
+        :gsub("\226\128\162", " ") -- bullet
+        :gsub("\194\183", " ") -- middle dot
+        :gsub("\226\128\147", " ") -- en dash
+        :gsub("\226\128\148", " ") -- em dash
     text = text:gsub("[%.,%!%?]", " ")
     text = text:lower()
     text = text:gsub("%s+", " ")
@@ -122,9 +126,8 @@ local function ObjectiveTextMatchesUnit(objText, unitNameNorm, objectiveType)
     if objectiveType == "item" or objectiveType == "object" then
         return overlap >= 1
     end
-    -- Kill/other objectives must name the unit's class noun (its final name
-    -- token) so same-family mobs do not cross-match: Rot Hide Gnoll must not
-    -- pick up Rot Hide Mongrel or Rot Hide Graverobber objectives and vice versa.
+    -- Shared family words are insufficient for kill objectives: the unit's
+    -- distinguishing final word must be present in the objective.
     return setA[listB[#listB]] == true
 end
 
@@ -253,14 +256,11 @@ function SQP:GetQuestProgress(unitID)
                 end
             end
             if lineType == nil and type(text) == "string" then
-                -- Legacy untyped tooltip rows: accept only genuine objective
-                -- text for this unit (or item/objective lines the tooltip
-                -- already scoped to the unit). Completed parts parse to zero
-                -- remaining and are rejected here.
-                local lineRemaining = GetRemainingFromObjectiveText(text)
-                local lineTypeGuess = FindObjectiveTypeForText(text)
-                local lineNameMatched = ObjectiveTextMatchesUnit(text, unitNameNorm)
-                if not (lineRemaining and lineRemaining > 0 and (lineNameMatched or lineTypeGuess == "item" or lineTypeGuess == "object")) then
+                local remaining = GetRemainingFromObjectiveText(text)
+                local objectiveType = FindObjectiveTypeForText(text)
+                if not (remaining and remaining > 0 and
+                    (ObjectiveTextMatchesUnit(text, unitNameNorm) or
+                     objectiveType == "item" or objectiveType == "object")) then
                     text = nil
                 end
             end
@@ -283,7 +283,7 @@ function SQP:GetQuestProgress(unitID)
         end
 
         if #tooltipObjectives > 0 then
-            local chosen = nil
+            local chosen
             if unitNameNorm then
                 for _, tooltipObj in ipairs(tooltipObjectives) do
                     local tNorm = NormalizeObjectiveText(tooltipObj.text)
@@ -293,16 +293,16 @@ function SQP:GetQuestProgress(unitID)
                     end
                 end
             end
+
             if not chosen then
                 for _, tooltipObj in ipairs(tooltipObjectives) do
-                    local tType = FindObjectiveTypeForText(tooltipObj.text)
-                    if tType == "item" or tType == "object" then
+                    local objType = FindObjectiveTypeForText(tooltipObj.text)
+                    if objType == "item" or objType == "object" then
                         chosen = tooltipObj
                         break
                     end
                 end
             end
-
             if chosen then
                 local objType = FindObjectiveTypeForText(chosen.text)
                 if objType == "item" or objType == "object" then
@@ -311,11 +311,7 @@ function SQP:GetQuestProgress(unitID)
                     objectiveCount = chosen.amountNeeded
                 end
                 progressGlob = chosen.text
-                if chosen.isPercent then
-                    questType = 3
-                else
-                    questType = questType or 1
-                end
+                questType = chosen.isPercent and 3 or (questType or 1)
             end
         end
     end
@@ -328,13 +324,9 @@ function SQP:GetQuestProgress(unitID)
             if not questID and not questLogIndex then return end
             local objectives = SQP.Compat.GetQuestObjectives(questID, questLogIndex)
             for _, obj in ipairs(objectives) do
-                local objFinished = obj.isFinished or obj.finished
-                if obj.text and not objFinished and ObjectiveTextMatchesUnit(obj.text, unitNameNorm, obj.type) then
+                if obj.text and not (obj.isFinished or obj.finished) and
+                    ObjectiveTextMatchesUnit(obj.text, unitNameNorm, obj.type) then
                     local numLeft, isPercent = GetRemainingFromObjectiveText(obj.text)
-                    if not numLeft and obj.numRequired and obj.numFulfilled then
-                        local remaining = (tonumber(obj.numRequired) or 0) - (tonumber(obj.numFulfilled) or 0)
-                        if remaining > 0 then numLeft = remaining end
-                    end
                     if numLeft and numLeft > 0 then
                         if obj.type == 'item' or obj.type == 'object' then
                             if numLeft > itemsNeeded then itemsNeeded = numLeft end
@@ -408,27 +400,11 @@ function SQP:UpdateQuestIcon(plate, unitID)
     end
     
     local progressGlob, questType, objectiveCount, itemsNeeded, questID = self:GetQuestProgress(unitID)
-    local questRelatedOnly = false
 
-    if not progressGlob and SQP.Compat and SQP.Compat.IsQuestRelatedUnit then
-        local ok, related = pcall(SQP.Compat.IsQuestRelatedUnit, unitID)
-        if ok and related then
-            questRelatedOnly = true
-        end
-    end
-
-    if questRelatedOnly then
-        if UnitCanAttack and not UnitCanAttack("player", unitID) then
-            questRelatedOnly = false
-        end
-        if UnitIsPlayer and UnitIsPlayer(unitID) then
-            questRelatedOnly = false
-        end
-    end
-
-    -- Decide if there is a relevant objective for this unit
+    -- Show only confirmed unfinished objectives, never infer progress from
+    -- a broad quest-related flag and an unrelated active quest.
     local showIcon = false
-    local displayText = "?"
+    local displayText = ""
     local displayColor = {1, 1, 1} -- Default white
     local function IsIconStyleEnabled(typeKey)
         local value = SQPSettings[typeKey .. "ShowIconBackground"]
@@ -465,37 +441,10 @@ function SQP:UpdateQuestIcon(plate, unitID)
             end
             Q.hasItem = false
             Q.questType = questType
-        elseif questType == 3 then -- Percent quest without a specific kill count
-            showIcon = true
-            displayText = objectiveCount > 0 and objectiveCount or '?'
-            displayColor = SQPSettings.percentColor or {0.2, 1, 1}
-            Q.hasItem = false
-            Q.questType = questType
         end
     end
 
-    if questRelatedOnly and not showIcon then
-        -- Only show "?" if at least one incomplete quest exists (prevents stale icons after quest completion)
-        local hasIncomplete = false
-        if SQP.Compat and SQP.Compat.GetNumQuestLogEntries then
-            for i = 1, SQP.Compat.GetNumQuestLogEntries() do
-                local info = SQP.Compat.GetInfo(i)
-                if info and not info.isHeader and not info.isHidden and (not info.isComplete or info.isComplete == 0) then
-                    hasIncomplete = true
-                    break
-                end
-            end
-        end
-        if hasIncomplete then
-            showIcon = true
-            displayText = "?"
-            displayColor = SQPSettings.killColor or {1, 0.82, 0}
-            Q.hasItem = false
-            Q.questType = 1
-        end
-    end
-
-    Q.questRelatedOnly = questRelatedOnly
+    Q.questRelatedOnly = false
 
     -- Per-type tinting: determine effective quest type
     local effectiveType = (Q.hasItem and "loot") or ((questType or 0) == 3 and "percent") or "kill"
@@ -516,7 +465,7 @@ function SQP:UpdateQuestIcon(plate, unitID)
     end
 
     local percentIconMode = IsIconStyleEnabled("percent")
-    local showPercentIcon = showIcon and questType == 3 and SQPSettings.showPercentIcon ~= false
+    local showPercentIcon = showIcon and questType == 3 and SQPSettings.showPercentIcon == true
     local percentText = tostring(displayText) .. "%"
     if showPercentIcon then
         if Q.icon then

@@ -47,7 +47,7 @@ function SQP:CreateOptionsPanel()
         author       = SQP.AUTHOR or "DonnieDice",
         website      = "|cff7289daDiscord:|r |cffffd700discord.gg/N7kdKAHVVF|r",
         brand        = "|cff8b4b5cRGX|r |cffffd700Mods|r",
-        icon         = "Interface\\AddOns\\SimpleQuestPlates\\media\\logo.tga",
+        icon         = SQP.ICON_TEXTURE,
         openInSettings = true,
         registerInSettings = true,
         bannerHeight = 88,
