@@ -6,16 +6,9 @@
 --====================================================================================
 
 local addonName, SQP = ...
+local SQPSettings
 
 local RGX = assert(_G.RGXFramework, "SQP: RGX-Framework not loaded")
-
--- Initialize RGX Database for settings
-SQP.db = RGX:NewDatabase("SQPSettings", SQP.DEFAULTS, {
-	profileIsGlobal = true,
-})
-
--- Backward-compat global alias (code can still use SQPSettings table)
-SQPSettings = SQP.db.global
 
 -- Cache frequently used globals
 local pcall = pcall
@@ -90,7 +83,7 @@ local function GetAddOnMetadataCompat(name, field)
     return nil
 end
 
-SQP.VERSION = "2.1.7-beta.3" -- Addon version (also in TOC file)
+SQP.VERSION = "2.1.8-beta.1" -- Addon version (also in TOC file)
 SQP.NAME = GetAddOnMetadataCompat(addonName, "Title") or addonName or "SimpleQuestPlates"
 SQP.AUTHOR = GetAddOnMetadataCompat(addonName, "Author") or "DonnieDice"
 SQP.LOCALE = GetLocale()
@@ -98,9 +91,8 @@ SQP.ICON_TEXTURE = GetAddOnMetadataCompat(addonName, "IconTexture")
     or ("Interface\\AddOns\\" .. (addonName or "SimpleQuestPlates") .. "\\media\\icon")
 
 do
-    local _, _, _, tocversion = GetBuildInfo and GetBuildInfo() or nil
-    tocversion = tonumber(tocversion)
-    if not tocversion then
+    local tocversion = tonumber(RGX.interfaceVersion)
+    if not tocversion or tocversion <= 0 then
         local interfaceString = GetAddOnMetadataCompat(addonName, "Interface")
         if type(interfaceString) == "string" then
             tocversion = tonumber(interfaceString:match("%d+"))
@@ -135,7 +127,7 @@ SQP.DEFAULTS = {
     fontOutline = "",            -- No outline by default
     outlineWidth = 0,
     fontSize = 12,
-    fontFamily = "FrizQuadrata", -- RGX framework default font (RGXFonts)
+    fontFamily = "Fonts/FRIZQT__.TTF", -- Operator's saved Default profile baseline
     outlineColor = {0, 0, 0},
     outlineAlpha = 0,
     showMessages = true,
@@ -146,33 +138,46 @@ SQP.DEFAULTS = {
     -- default; per-type keys only exist once a user overrides them on the
     -- Kill / Loot / Percent tabs.
     showQuestMarker = true,          -- Animated quest marker on plate show
-    questMarkerSize = 28,
+    questMarkerSize = 40,
     percentSignSide = "right",       -- right | left
     killIconSide = "left",           -- kill task icon badge side: left | right
-    lootIconSide = "right",          -- loot task icon badge side: left | right
-    syncAnimations = false,          -- play all task/main pulses in phase
+    lootIconSide = "left",           -- Operator's saved Default profile baseline
+    showTargetGlow = true,           -- (retired: never touch Blizzard's selection highlight)
+    syncAnimations = false,
+    toastDuration = 1.3,
+    toastHeight = 30,          -- play all task/main pulses in phase; new baseline
     animateQuestIcon = false,
     animateQuestIcons = true,
+    animateMainIcons = false, -- Global main-icon option; per-type toggles apply when off
     useGlobalAnimationSettings = false,
     globalAnimationEnabled = true,
+    animationsEnabled = true,
+    killAnimationsEnabled = true,
+    lootAnimationsEnabled = true,
+    percentAnimationsEnabled = false,
+    killEnabled = true,
+    lootEnabled = true,
+    percentEnabled = true,
     animationCombatMode = "always", -- always | combat | outofcombat
     globalAnimationIntensity = 100,
     killAnimationIntensity = 100,
     lootAnimationIntensity = 100,
     percentAnimationIntensity = 100,
     showIconBackground = true, -- Legacy shared display style toggle
-    killShowIconBackground = true,
-    lootShowIconBackground = true,
-    percentShowIconBackground = false,
-    killIconOffsetX = 2,
-    killIconOffsetY = 15,
-    lootIconOffsetX = -38,
+    -- Per-type background overrides are absent by default and inherit Global.
+    killIconOffsetX = 1,
+    killIconOffsetY = 16,
+    lootIconOffsetX = 3,
     lootIconOffsetY = 16,
-    percentIconOffsetX = 18,
+    -- Percent sign offsets are measured from the shipped baseline position
+    -- (the current in-game look); 0 renders exactly there.
+    percentIconOffsetX = 0,
     percentIconOffsetY = 0,
-    killIconSize = 14,
+    killIconSize = 12,
     lootIconSize = 14,
-    percentIconSize = 8,
+    -- Starts at the shared 12; the sign would otherwise render smaller than
+    -- the kill/loot counts it floats beside.
+    percentIconSize = 12,
     iconTintMain = false,
     iconTintMainColor = {1, 1, 1},
     iconTintQuest = false,
@@ -200,6 +205,52 @@ SQP.DEFAULTS = {
 
 SQP.defaultMinimapAngle = 220
 
+-- Every control and renderer resolves the same baseline. Per-type fonts
+-- inherit General until an explicit override is saved.
+function SQP:GetSettingBaseline(key)
+    if key == "offsetX" and SQPSettings.anchor == "LEFT" then return 23 end
+    if key == "killIconOffsetX" and SQPSettings.anchor ~= "LEFT" then
+        local chip = SQPSettings.killLevelChip
+        if chip == nil then chip = SQPSettings.unifiedNameplates end
+        if chip == true then return 0 end
+    end
+    if SQPSettings.anchor == "LEFT" then
+        if key == "killIconOffsetX" then return -3 end
+        if key == "lootIconOffsetX" then return -44 end
+    end
+    local value = self.DEFAULTS[key]
+    if value ~= nil then return value end
+    if key:match("^(kill)FontSize$") or key:match("^(loot)FontSize$") or key:match("^(percent)FontSize$") then
+        return SQPSettings.fontSize or self.DEFAULTS.fontSize
+    end
+    if key:match("^(kill)FontFamily$") or key:match("^(loot)FontFamily$") or key:match("^(percent)FontFamily$") then
+        return SQPSettings.fontFamily or self.DEFAULTS.fontFamily
+    end
+end
+
+function SQP:GetSettingValue(key)
+    local value = SQPSettings[key]
+    if value ~= nil then return value end
+    return self:GetSettingBaseline(key)
+end
+
+-- Declare defaults before constructing the single persistent database owner.
+SQP.db = RGX:NewDatabase("SQPSettings", SQP.DEFAULTS, {
+    legacyFlat = true,
+    profileIsGlobal = true,
+    onSwitch = function()
+        if SQP.optionsPanel then
+            SQP.optionsPanel:InvalidateAllTabs()
+            SQP.optionsPanel:Refresh()
+        end
+        if SQP.QuestPlates and type(SQP.RefreshAllNameplates) == "function" then
+            SQP:RefreshAllNameplates()
+        end
+    end,
+})
+-- Keep the TOC SavedVariables owner raw; modules bind the profile view locally.
+SQPSettings = SQP.db.global
+
 -- Animation setting helpers
 function SQP:IsAnimationCombatAllowed()
     local settings = SQPSettings or self.DEFAULTS or {}
@@ -222,6 +273,9 @@ end
 
 function SQP:IsAnimationEnabled(typeKey, isTaskIcon)
     local settings = SQPSettings or self.DEFAULTS or {}
+    if settings.animationsEnabled == false or (typeKey and settings[typeKey .. "AnimationsEnabled"] == false) then
+        return false
+    end
     local baseEnabled = false
 
     if settings.useGlobalAnimationSettings == true then
@@ -229,7 +283,7 @@ function SQP:IsAnimationEnabled(typeKey, isTaskIcon)
     elseif isTaskIcon then
         baseEnabled = settings.animateQuestIcons == true
     elseif typeKey and typeKey ~= "" then
-        baseEnabled = settings[typeKey .. "AnimateMain"] == true
+        baseEnabled = settings.animateMainIcons == true or settings[typeKey .. "AnimateMain"] == true
     end
 
     if not baseEnabled then
@@ -243,7 +297,7 @@ function SQP:GetAnimationIntensity(typeKey)
     local settings = SQPSettings or self.DEFAULTS or {}
     local intensity
 
-    if settings.useGlobalAnimationSettings == true then
+    if settings.useGlobalAnimationSettings == true or settings.syncAnimations == true then
         intensity = settings.globalAnimationIntensity
     elseif typeKey and typeKey ~= "" then
         intensity = settings[typeKey .. "AnimationIntensity"]
@@ -260,7 +314,7 @@ function SQP:GetAnimationIntensity(typeKey)
 end
 
 function SQP:GetAnimationDuration(typeKey, isMain)
-    local baseDuration = isMain and 0.5 or 0.6
+    local baseDuration = SQPSettings and SQPSettings.syncAnimations and 0.6 or (isMain and 0.5 or 0.6)
     local intensity = self:GetAnimationIntensity(typeKey)
     local duration = baseDuration * (100 / intensity)
     if duration < 0.15 then duration = 0.15 end
@@ -270,6 +324,8 @@ end
 
 function SQP:ApplyPulseDuration(animationGroup, duration)
     if not animationGroup or not duration then return end
+    if animationGroup._pulseDuration == duration then return end
+    animationGroup._pulseDuration = duration
 
     if animationGroup._fadeOut and animationGroup._fadeOut.SetDuration then
         animationGroup._fadeOut:SetDuration(duration)
@@ -328,17 +384,12 @@ function SQP:MigrateLegacyFontDefaults(settings)
     if settings.fontFamily == LEGACY_DEFAULT_FONT then
         settings.fontFamily = self.DEFAULTS.fontFamily
     end
-    local legacySize = { kill = 12, loot = 12, percent = 8 }
-    for typeKey, size in pairs(legacySize) do
+    for _, typeKey in ipairs({ "kill", "loot", "percent" }) do
         if settings[typeKey .. "FontFamily"] == LEGACY_DEFAULT_FONT then
             settings[typeKey .. "FontFamily"] = nil
         end
-        if settings[typeKey .. "FontSize"] == size then
-            settings[typeKey .. "FontSize"] = nil
-        end
-        if settings[typeKey .. "FontOutline"] == "" then
-            settings[typeKey .. "FontOutline"] = nil
-        end
+        -- Explicit size/outline choices are user data, even when equal to old
+        -- defaults. There is no evidence they were automatically generated.
     end
 end
 
@@ -361,7 +412,7 @@ SQP.SOUND_KIT_ID_QUEST_ACCEPT = 815 -- UI_QuestLog_QuestAccepted
 -- Constants for UI
 SQP.PANEL_WIDTH = 700
 SQP.PANEL_HEIGHT = 600
-SQP.PANEL_NAME = format("|TInterface\\AddOns\\%s\\media\\logo.tga:16:16:0:0|t |cff58be81S|r|cffffffffimple|r |cff58be81Q|r|cffffffffuest|r |cff58be81P|r|cfffffffflates|r|cff58be81!|r", addonName)
+SQP.PANEL_NAME = format("|T%s:16:16:0:0|t %s", SQP.ICON_TEXTURE, SQP.NAME)
 SQP.SECTION_COLOR = { r = 0.58, g = 0.79, b = 1, a = 1 } -- RGX Blue
 SQP.BACKDROP_DARK = {
     bgFile = "Interface/Tooltips/UI-Tooltip-Background",
@@ -419,6 +470,7 @@ end
 function SQP:GetSavedSettings()
 	return SQPSettings
 end
+SQP.GetSettings = SQP.GetSavedSettings
 
 -- Save settings (RGX handles persistence automatically)
 function SQP:SaveSettings()
@@ -429,9 +481,9 @@ end
 function SQP:SetSetting(key, value)
 	if not key then return end
 
-	-- Persist booleans as explicit true/false (never nil)
+	-- Explicit values stay boolean; nil deliberately clears an override.
 	local defaultValue = self.DEFAULTS and self.DEFAULTS[key]
-	if type(defaultValue) == "boolean" then
+	if value ~= nil and type(defaultValue) == "boolean" then
 		value = value and true or false
 	end
 
@@ -441,13 +493,8 @@ end
 
 -- Reset settings to default
 function SQP:ResetSettings()
-	-- Reset to defaults via database
-	for k in pairs(SQPSettings) do
-		SQPSettings[k] = nil
-	end
-	for k, v in pairs(self.DEFAULTS) do
-		SQPSettings[k] = v
-	end
+	-- The framework deep-fills fresh values; never alias nested default tables.
+	if not self.db:ResetProfile() then return end
 	self:PrintMessage(self.L["SETTINGS_RESET"] or "|cff58be81All settings have been reset to defaults|r")
 	self:RefreshAllNameplates()
 end
@@ -478,18 +525,18 @@ function SQP:SetupMinimapButton()
         angleKey     = "minimapAngle",
         enabledKey   = "minimapIconEnabled",
         tooltip = {
-            title = format("|T%s:18:18:0:0|t |cff58be81S|r|cffffffffimple |cff58be81Q|r|cffffffffuest |cff58be81P|r|cfffffffflates|cff58be81!|r", self.ICON_TEXTURE or ""),
+            title = SQP.NAME or "Simple Quest Plates!",
             lines = {
                 { left = "|cff58be81Left-Click|r",       right = "Open options" },
+                { left = "|cff58be81Right-Click|r",      right = SQPSettings.enabled and "Disable overlays" or "Enable overlays" },
                 { left = "|cff4ecdc4Drag|r",             right = "Move around minimap" },
                 { left = "|cffe74c3cCtrl+Right-Click|r", right = "Hide minimap icon" },
             },
         },
-        onLeftClick = function()
-            local function openOptions()
-                SQP:OpenOptions()
-            end
-            RGX:After(0, openOptions)
+        onLeftClick = function() SQP:ToggleOptions() end,
+        onRightClick = function()
+            SQP:SetSetting('enabled', SQPSettings.enabled == false)
+            SQP:RefreshAllNameplates()
         end,
         onCtrlRight = function() SQP:ToggleMinimapIcon(false) end,
     })

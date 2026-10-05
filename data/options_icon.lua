@@ -6,6 +6,7 @@
 --=====================================================================================
 
 local addonName, SQP = ...
+local SQPSettings = SQP.db.global
 local format = string.format
 
 function SQP:CreateIconOptions(content)
@@ -13,7 +14,7 @@ function SQP:CreateIconOptions(content)
 
     local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
-    -- â”€â”€ LEFT COLUMN: Position â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    -- == LEFT COLUMN: Position ================================================
     local yOffset = -12
 
     local posLabel = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -29,7 +30,7 @@ function SQP:CreateIconOptions(content)
 		min = -100,
 		max = 100,
 		step = 1,
-		default = 12,
+		default = 0,
 		storage = SQPSettings,
 		width = 160,
 		onChange = function(value)
@@ -48,7 +49,7 @@ function SQP:CreateIconOptions(content)
 		min = -100,
 		max = 100,
 		step = 1,
-		default = 3,
+		default = 0,
 		storage = SQPSettings,
 		width = 160,
 		onChange = function(value)
@@ -101,7 +102,7 @@ function SQP:CreateIconOptions(content)
     end)
     anchorReset:SetPoint("LEFT", rightBtn, "RIGHT", 6, 0)
 
-    -- â”€â”€ RIGHT COLUMN: Scale + Display Style â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    -- == RIGHT COLUMN: Scale + Display Style ==================================
     local rightYOffset = -12
 
     local styleLabel = rightColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -111,11 +112,12 @@ function SQP:CreateIconOptions(content)
     rightYOffset = rightYOffset - 22
 
 	-- Global Scale
+	-- Range 0.5–1.5 centers the slider on 1; 1.1 is the baseline default.
 	local scaleSlider = self:CreateStyledSlider(rightColumn, {
 		key = "scale",
 		label = self.L["OPTIONS_GLOBAL_SCALE"] or "Global Scale",
 		min = 0.5,
-		max = 3.0,
+		max = 1.5,
 		step = 0.1,
 		default = 1.1,
 		storage = SQPSettings,
