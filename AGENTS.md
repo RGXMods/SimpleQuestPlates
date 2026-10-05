@@ -1,6 +1,6 @@
 # SimpleQuestPlates
 
-SimpleQuestPlates overlays quest-objective progress on enemy nameplates. The `main` branch is Retail-only: `SimpleQuestPlates.toc` currently targets interface `120007` and requires `RGX-Framework`. Classic support is maintained separately on `classic-fork` and in the `SQP_Classic` repository; do not add Classic interface values or fork-only code to `main`.
+SimpleQuestPlates overlays quest-objective progress on enemy nameplates. Main ships one merged build for Retail (`120100`) and the WoW Forever beta (`16001`) through `SimpleQuestPlates.toc`; the separate Forever fork stopped taking new versions after its stable 2.1.7-forever release. Classic support stays separate: classic flavors live in the `SQP_Classic` repository (this repo's `classic-fork` branch is retired for new work); do not add Classic interface values to `main`.
 
 ## Layout
 
@@ -40,7 +40,7 @@ SimpleQuestPlates overlays quest-objective progress on enemy nameplates. The `ma
 - Prefer framework subsystems over raw WoW API: timers and repeating schedules, event registration, slash commands, minimap button, saved-settings database, aura watching, UI controls and dropdowns, colors, fonts, theming, tooltips, and sound.
 - Forbidden patterns that fail `rgx_audit_lua`: raw `C_Timer`, manual event frames, `SLASH_` globals, unguarded `SetAttribute`, raw aura plumbing, and raw hook reassignment. Replace them with framework-managed equivalents; migrate existing compatibility paths deliberately instead of silently breaking them.
 - Validation: Lua 5.1 (`luac5.1 -p`) and XML (`xmllint`) must pass through the shared CI include before every MR, and the root README stays nonempty and substantive.
-- Dependencies: keep `## RequiredDeps: RGX-Framework` and any `## X-RGX-Framework-MinVersion` accurate against the framework version line, and match the TOC SavedVariables name (`SQPSettings`) with the declarative `dbName`.
+- Dependencies: keep `## RequiredDeps: RGX-Framework` and any `## X-RGX-Framework-MinVersion` accurate against the framework version line, and match the TOC SavedVariables names (`SQPSettings` canonical, `SQPForeverSettings` the read-only legacy migration source) with actual code.
 - Repo facts: this addon targets Retail only and uses `/sqp` (`/sqp help`, `/sqp status`, `/sqp test`) for options and diagnostics. The TOC owns the `X.Y.Z-beta.N` version and loads `SimpleQuestPlates.xml`; `SQP.VERSION` in `data/core.lua` bumps with the TOC. The interface number named in the introduction above is historical — the TOC is authoritative. Recheck facts in the TOC and README when they change.
 
 ## Keeping Interface Versions Current

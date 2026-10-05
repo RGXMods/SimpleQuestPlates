@@ -2,15 +2,16 @@
 -- RGX | Simple Quest Plates! - options_about.lua
 
 -- Author: DonnieDice
--- Description: About tab â€” minimal info + slash commands
+-- Description: About tab - minimal info + slash commands
 --=====================================================================================
 
 local addonName, SQP = ...
+local SQPSettings = SQP.db.global
 
 function SQP:CreateAboutSection(content)
     local leftColumn, rightColumn = SQP:CreateOptionColumns(content)
 
-    -- â”€â”€ LEFT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    -- == LEFT COLUMN ===========================================================
     local yOffset = -12
 
     -- Title
@@ -24,17 +25,17 @@ function SQP:CreateAboutSection(content)
     local versionText = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(versionText)
     versionText:SetPoint("TOPLEFT", 20, yOffset)
-    versionText:SetText("v" .. (SQP.VERSION or "1.0.0") .. "  |cffaaaaaaRetail â€” Warcraft Midnight|r")
+    versionText:SetText("v" .. (SQP.VERSION or "1.0.0") .. "  |cffaaaaaaRetail - Warcraft Midnight|r")
     yOffset = yOffset - 20
 
-    local authorText = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local authorText = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(authorText)
     authorText:SetPoint("TOPLEFT", 20, yOffset)
-    authorText:SetText("|cff888888By DonnieDice Â· donniedice@protonmail.com|r")
+    authorText:SetText("|cff888888By DonnieDice - donniedice@protonmail.com|r")
     yOffset = yOffset - 26
 
     -- Description
-    local descText = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local descText = leftColumn:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(descText)
     descText:SetPoint("TOPLEFT", 20, yOffset)
     descText:SetPoint("TOPRIGHT", -10, yOffset)
@@ -62,19 +63,19 @@ function SQP:CreateAboutSection(content)
     discordTitle:SetPoint("RIGHT", communityFrame, "RIGHT", -8, 0)
     discordTitle:SetText("|cff58be81RGX Mods Community|r")
 
-    local discordDesc = communityFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local discordDesc = communityFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(discordDesc)
     discordDesc:SetPoint("TOPLEFT", discordTitle, "BOTTOMLEFT", 0, -2)
     discordDesc:SetPoint("RIGHT", communityFrame, "RIGHT", -8, 0)
     discordDesc:SetText("Join us for support, feedback, and more!")
 
-    local discordLink = communityFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local discordLink = communityFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(discordLink)
     discordLink:SetPoint("TOPLEFT", discordDesc, "BOTTOMLEFT", 0, -2)
     discordLink:SetPoint("RIGHT", communityFrame, "RIGHT", -8, 0)
     discordLink:SetText("|cffffffdadiscord.gg/N7kdKAHVVF|r")
 
-    -- â”€â”€ RIGHT COLUMN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    -- == RIGHT COLUMN ==========================================================
     local rightYOffset = -12
 
     -- Slash Commands box
@@ -92,7 +93,7 @@ function SQP:CreateAboutSection(content)
     cmdTitle:SetText("|cff58be81Slash Commands  |cffaaaaaa/sqp|r")
 
     -- Two-column layout: commands | descriptions
-    local cmdList = cmdFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local cmdList = cmdFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(cmdList)
     cmdList:SetPoint("TOPLEFT", cmdTitle, "BOTTOMLEFT", 0, -8)
     cmdList:SetWidth(120)
@@ -108,7 +109,7 @@ function SQP:CreateAboutSection(content)
         "|cff58be81/sqp offset 0 3|r"
     )
 
-    local descList = cmdFrame:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
+    local descList = cmdFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")
     SQP:ApplyDefaultFont(descList)
     descList:SetPoint("TOPLEFT", cmdList, "TOPRIGHT", 8, 0)
     descList:SetPoint("RIGHT", cmdFrame, "RIGHT", -8, 0)
