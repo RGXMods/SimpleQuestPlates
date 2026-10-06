@@ -169,40 +169,39 @@ function SQP:CreateLevelChip(parent)
     background:SetAllPoints(chip)
     chip.background = background
     if background.SetAtlas then
-        -- pcall's first result is success, not the atlas probe result; apply
-        -- the art only when the call both ran and found the Forever atlas.
-        local okAtlas, applied = pcall(background.SetAtlas, background, "UI-HUD-Nameplates-LevelIndicator-rectangle")
-        if okAtlas and applied ~= false then
-            chip.usesLevelAtlas = true
+        -- Ask the client whether the Forever atlas *exists* before applying it.
+        -- A missing atlas can no-op inside SetAtlas without erroring.
+        local atlasName = "UI-HUD-Nameplates-LevelIndicator-rectangle"
+        local supported = false
+        if C_Texture and type(C_Texture.GetAtlasInfo) == "function" then
+            local ok, info = pcall(C_Texture.GetAtlasInfo, atlasName)
+            supported = ok and type(info) == "table"
+        end
+        if supported then
+            local okAtlas, applied = pcall(background.SetAtlas, background, atlasName)
+            if okAtlas and applied ~= false then
+                chip.usesLevelAtlas = true
+            end
         end
     end
     if not chip.usesLevelAtlas then
-        -- The Forever level-indicator atlas has no Retail atlas equivalent;
-        -- use portable white-square fill + 1px border so the chip renders the
-        -- same way on every client, not just Forever.
-        background:SetColorTexture(0.05, 0.05, 0.08, 0.55)
-        chip._borderColor = { 0.345, 0.745, 0.506, 1 }
-        chip._fallbackFill = true
-        for _, side in ipairs({ "TOP", "BOTTOM", "LEFT", "RIGHT" }) do
-            local edge = chip:CreateTexture(nil, "BACKGROUND", nil, 1)
-            edge:SetColorTexture(0.345, 0.745, 0.506, 0.9)
-            if side == "TOP" then
-                edge:SetPoint("TOPLEFT", chip, "TOPLEFT", 0, 0)
-                edge:SetPoint("TOPRIGHT", chip, "TOPRIGHT", 0, 0)
-                edge:SetHeight(1)
-            elseif side == "BOTTOM" then
-                edge:SetPoint("BOTTOMLEFT", chip, "BOTTOMLEFT", 0, 0)
-                edge:SetPoint("BOTTOMRIGHT", chip, "BOTTOMRIGHT", 0, 0)
-                edge:SetHeight(1)
-            elseif side == "LEFT" then
-                edge:SetPoint("TOPLEFT", chip, "TOPLEFT", 0, 0)
-                edge:SetPoint("BOTTOMLEFT", chip, "BOTTOMLEFT", 0, 0)
-                edge:SetWidth(1)
+        -- One shared "coin" chip texture that exists on every client, so the
+        -- Forever CAD label can render on Retail and Classic without help from
+        -- the client art archives. The transparent coin icon keeps the frame
+        -- dense around the number instead of a plain dark box.
+        local coinTex = "auctionhouse-icon-coin-gold"
+        if C_Texture and type(C_Texture.GetAtlasInfo) == "function"
+            and background.SetAtlas then
+            local okInfo, info = pcall(C_Texture.GetAtlasInfo, coinTex)
+            if okInfo and type(info) == "table" then
+                pcall(background.SetAtlas, background, coinTex)
             else
-                edge:SetPoint("TOPRIGHT", chip, "TOPRIGHT", 0, 0)
-                edge:SetPoint("BOTTOMRIGHT", chip, "BOTTOMRIGHT", 0, 0)
-                edge:SetWidth(1)
+                background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+                background:SetAlpha(0.85)
             end
+        else
+            background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+            background:SetAlpha(0.85)
         end
     end
     chip:Hide()
@@ -232,10 +231,9 @@ function SQP:UpdateUnifiedChip(questFrame)
     local w = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
     local _, h = iconText:GetFont()
     chip:SetSize(w + 10, (h or 12) + 8)
-    if not chip.usesLevelAtlas and not chip._fallbackFill then
-        chip.background:SetColorTexture(0, 0, 0, 0.55)
-    elseif chip._fallbackFill then
-        chip.background:SetColorTexture(0.05, 0.05, 0.08, 0.55)
+    if not chip.usesLevelAtlas then
+        chip.background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
+        chip.background:SetAlpha(0.85)
     end
     chip:Show()
 end

@@ -101,7 +101,7 @@ function SQP:CreateOptionsPanel()
                         presets = {
                             { name = "Classic",   description = "Floating quest icons",        mode = "icon" },
                             { name = "Text Mode", description = "Counts only, no backgrounds", mode = "text" },
-                            { name = "Forever",   description = "Native level-frame style",     mode = "chip" },
+                            { name = "Coin",      description = "Client-native coin chip",        mode = "chip" },
                             { name = "Future Preset 1", disabled = true },
                             { name = "Future Preset 2", disabled = true },
                             { name = "Future Preset 3", disabled = true },
