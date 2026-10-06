@@ -347,7 +347,9 @@ function SQP:CreateDisplayStyleSection(parent, typeKey, activatePreviewFn, yOffs
         value = CurrentMode(),
         items = {
             { text = "Classic (default)", value = "icon" },
-            { text = "Forever",           value = "chip" },
+            -- The Forever atlas only exists on the Forever client. Elsewhere,
+            -- chip maps to the portable rounded bubble variant instead.
+            { text = "Coin", value = "chip" },
         },
         onChange = function(value)
             SQP:SetSetting(chipKey, value == "chip")
