@@ -24,6 +24,8 @@ local isVanilla = SQP.tocversion < 20000
 SQP.isRetail = isRetail
 SQP.isClassic = isClassic
 SQP.isMoP = isMoP
+-- Forever-only art APIs; Retail/Classic must not reach for them.
+SQP.isForever = SQP.tocversion >= 16000 and SQP.tocversion < 17000
 
 -- Create compatibility namespace
 SQP.Compat = {}

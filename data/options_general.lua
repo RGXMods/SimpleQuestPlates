@@ -261,7 +261,7 @@ local function BuildDisplayPage(leftColumn, rightColumn, generalCard)
                 value = CurrentMode(),
                 items = {
                     { text = "Classic (default)", value = "icon" },
-                    { text = "Forever",               value = "chip" },
+                    { text = "Coin", value = "chip" },
                 },
                 onChange = function(value)
                     SQP:ApplyGlobalDisplayStyle(value, true)
