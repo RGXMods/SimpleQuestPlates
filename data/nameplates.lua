@@ -169,13 +169,41 @@ function SQP:CreateLevelChip(parent)
     background:SetAllPoints(chip)
     chip.background = background
     if background.SetAtlas then
-        local okAtlas = pcall(background.SetAtlas, background, "UI-HUD-Nameplates-LevelIndicator-rectangle")
-        if okAtlas then
+        -- pcall's first result is success, not the atlas probe result; apply
+        -- the art only when the call both ran and found the Forever atlas.
+        local okAtlas, applied = pcall(background.SetAtlas, background, "UI-HUD-Nameplates-LevelIndicator-rectangle")
+        if okAtlas and applied ~= false then
             chip.usesLevelAtlas = true
         end
     end
     if not chip.usesLevelAtlas then
-        background:SetColorTexture(0, 0, 0, 0.55)
+        -- The Forever level-indicator atlas has no Retail atlas equivalent;
+        -- use portable white-square fill + 1px border so the chip renders the
+        -- same way on every client, not just Forever.
+        background:SetColorTexture(0.05, 0.05, 0.08, 0.55)
+        chip._borderColor = { 0.345, 0.745, 0.506, 1 }
+        chip._fallbackFill = true
+        for _, side in ipairs({ "TOP", "BOTTOM", "LEFT", "RIGHT" }) do
+            local edge = chip:CreateTexture(nil, "BACKGROUND", nil, 1)
+            edge:SetColorTexture(0.345, 0.745, 0.506, 0.9)
+            if side == "TOP" then
+                edge:SetPoint("TOPLEFT", chip, "TOPLEFT", 0, 0)
+                edge:SetPoint("TOPRIGHT", chip, "TOPRIGHT", 0, 0)
+                edge:SetHeight(1)
+            elseif side == "BOTTOM" then
+                edge:SetPoint("BOTTOMLEFT", chip, "BOTTOMLEFT", 0, 0)
+                edge:SetPoint("BOTTOMRIGHT", chip, "BOTTOMRIGHT", 0, 0)
+                edge:SetHeight(1)
+            elseif side == "LEFT" then
+                edge:SetPoint("TOPLEFT", chip, "TOPLEFT", 0, 0)
+                edge:SetPoint("BOTTOMLEFT", chip, "BOTTOMLEFT", 0, 0)
+                edge:SetWidth(1)
+            else
+                edge:SetPoint("TOPRIGHT", chip, "TOPRIGHT", 0, 0)
+                edge:SetPoint("BOTTOMRIGHT", chip, "BOTTOMRIGHT", 0, 0)
+                edge:SetWidth(1)
+            end
+        end
     end
     chip:Hide()
     return chip
@@ -204,8 +232,10 @@ function SQP:UpdateUnifiedChip(questFrame)
     local w = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
     local _, h = iconText:GetFont()
     chip:SetSize(w + 10, (h or 12) + 8)
-    if not chip.usesLevelAtlas then
+    if not chip.usesLevelAtlas and not chip._fallbackFill then
         chip.background:SetColorTexture(0, 0, 0, 0.55)
+    elseif chip._fallbackFill then
+        chip.background:SetColorTexture(0.05, 0.05, 0.08, 0.55)
     end
     chip:Show()
 end
