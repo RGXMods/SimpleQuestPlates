@@ -157,6 +157,32 @@ function SQP:AnchorTaskIcon(iconTex, icon, typeKey)
     end
 end
 
+-- Apply the selected art to both new chips and existing chips on refresh.
+-- Atlas names are not texture file paths; never pass them to SetTexture.
+function SQP:ApplyChipTexture(chip)
+    local background = chip.background
+    local chosen = SQPSettings.chipTexture or "square"
+    local texture = self.CHIP_TEXTURES[chosen] or self.CHIP_TEXTURES.square
+    background:SetTexture(nil)
+    background:SetTexCoord(0, 1, 0, 1)
+    background:SetVertexColor(1, 1, 1, 1)
+    background:SetAlpha(0.85)
+    if type(texture) == "table" and texture.file then
+        background:SetTexture(texture.file)
+        background:SetTexCoord(unpack(texture.coords))
+    elseif type(texture) == "table" then
+        local atlas = texture.atlas
+        local info = C_Texture and C_Texture.GetAtlasInfo and C_Texture.GetAtlasInfo(atlas)
+        if info and background.SetAtlas then
+            background:SetAtlas(atlas)
+        else
+            background:SetTexture(self.CHIP_TEXTURES.logo)
+        end
+    else
+        background:SetTexture(texture)
+    end
+end
+
 -- Like Forever's NameplateLevelFrame, the chip is a frame container with
 -- background artwork. The normal frame graphic is independent of Blizzard's
 -- separate target/focus selectedBorder; no selection highlight is added here.
@@ -168,41 +194,13 @@ function SQP:CreateLevelChip(parent)
     local background = chip:CreateTexture(nil, "BACKGROUND")
     background:SetAllPoints(chip)
     chip.background = background
-    if background.SetAtlas then
-        -- Ask the client whether the Forever atlas *exists* before applying it.
-        -- A missing atlas can no-op inside SetAtlas without erroring.
-        local atlasName = "UI-HUD-Nameplates-LevelIndicator-rectangle"
-        local supported = false
-        if C_Texture and type(C_Texture.GetAtlasInfo) == "function" then
-            local ok, info = pcall(C_Texture.GetAtlasInfo, atlasName)
-            supported = ok and type(info) == "table"
-        end
-        if supported then
-            local okAtlas, applied = pcall(background.SetAtlas, background, atlasName)
-            if okAtlas and applied ~= false then
-                chip.usesLevelAtlas = true
-            end
-        end
-    end
-    if not chip.usesLevelAtlas then
-        -- Palette of textures shipped by the product/Blizzard everywhere.
-        -- The dropdown picks one; the chip renders the same shape either way.
-        local map = SQP.CHIP_TEXTURES
-        local chosen = (SQPSettings.chipTexture or "square")
-        local tex = map and map[chosen] or nil
-        if type(tex) ~= "string" or tex == "" then
-            tex = "Interface\\Minimap\\UI-Minimap-Background"
-        end
-        background:SetTexture(tex)
-        background:SetAlpha(0.85)
-    end
+    self:ApplyChipTexture(chip)
     chip:Hide()
     return chip
 end
 
--- Unified mode shows the count in a native level-display style chip (dark
--- backdrop box hugging the number) instead of the floating jellybean. The
--- frame resizes to fit the current text on every update.
+-- Background geometry follows the normal quest icon dimensions, not font size.
+-- Global Scale scales the overlay; Font Size changes only its text.
 function SQP:UpdateUnifiedChip(questFrame)
     local chip = questFrame and questFrame.levelChip
     if not chip then
@@ -220,13 +218,8 @@ function SQP:UpdateUnifiedChip(questFrame)
     end
     chip:ClearAllPoints()
     chip:SetPoint("CENTER", iconText, "CENTER", 0, 0)
-    local w = (iconText.GetStringWidth and iconText:GetStringWidth()) or 16
-    local _, h = iconText:GetFont()
-    chip:SetSize(w + 10, (h or 12) + 8)
-    if not chip.usesLevelAtlas then
-        chip.background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-        chip.background:SetAlpha(0.85)
-    end
+    chip:SetSize(28, 22)
+    self:ApplyChipTexture(chip)
     chip:Show()
 end
 

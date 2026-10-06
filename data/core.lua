@@ -83,7 +83,7 @@ local function GetAddOnMetadataCompat(name, field)
     return nil
 end
 
-SQP.VERSION = "2.1.8-beta.1" -- Addon version (also in TOC file)
+SQP.VERSION = "2.1.8" -- Addon version (also in TOC file)
 SQP.NAME = GetAddOnMetadataCompat(addonName, "Title") or addonName or "SimpleQuestPlates"
 SQP.AUTHOR = GetAddOnMetadataCompat(addonName, "Author") or "DonnieDice"
 SQP.LOCALE = GetLocale()
@@ -111,7 +111,7 @@ SQP.DEFAULTS = {
     anchor = "RIGHT",
     relativeTo = "LEFT",
     unifiedNameplates = false,
-    chipTexture = "square",
+    chipTexture = "coin",
     hideInCombat = false,
     hideInInstance = false,
     minimapIconEnabled = true,
@@ -206,14 +206,77 @@ SQP.DEFAULTS = {
 
 SQP.defaultMinimapAngle = 220
 
--- Chip textures: shared assets that exist on every supported client build.
+-- Atlas candidates present in both Retail and Forever client dumps.
+-- Actual small-background appearance is selected through in-game testing.
 SQP.CHIP_TEXTURES = {
-    square = "Interface\\Buttons\\WHITE8x8",
-    round = "Interface\\Minimap\\UI-Minimap-Background",
-    coin = "auctionhouse-icon-coin-gold",
-    dark = "Interface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon",
+    square = { atlas = "QuestLog-tab" },
+    round = { atlas = "QuestNormal" },
+    coin = { atlas = "auctionhouse-icon-coin-gold" },
+    dark = { atlas = "QuestLog-reward-tile-vertical" },
     logo = "Interface\\AddOns\\SimpleQuestPlates\\media\\logo.tga",
+    questBook = { atlas = "UI-HUD-MicroMenu-Questlog-Up" },
+    questScroll = { atlas = "QuestLog-tab-icon-quest" },
+    questParchment = { atlas = "QuestLog-main-background" },
+    mapTurnin = { atlas = "QuestTurnin" },
+    mapDaily = { atlas = "QuestDaily" },
+    mapCampaign = { atlas = "Quest-Campaign-Available" },
+    mapBoss = { atlas = "worldquest-icon-boss" },
+    silver = { atlas = "auctionhouse-icon-coin-silver" },
+    copper = { atlas = "auctionhouse-icon-coin-copper" },
+    -- File IDs and UV crops agree in the Retail and Forever atlas sheets.
+    minimapFill = { file = 4618657, coords = {0.03125, 0.53125, 0.03125, 0.53125} },
+    minimapPressed = { file = 4618660, coords = {0.03125, 0.53125, 0.03125, 0.53125} },
+    parchmentFile = { file = 5684755, coords = {0.302734375, 0.6025390625, 0.001953125, 0.998046875} },
+    questTabFile = { file = 5684744, coords = {0.001953125, 0.126953125, 0.2890625, 0.33203125} },
+    questRewardFile = { file = 5684744, coords = {0.21484375, 0.814453125, 0.423828125, 0.5859375} },
+    medalGold = { atlas = "challenges-medal-small-gold" },
+    medalSilver = { atlas = "challenges-medal-small-silver" },
+    medalBronze = { atlas = "challenges-medal-small-bronze" },
+    artifactMedal = { atlas = "Artifacts-PerkRing-GoldMedal" },
+    levelBadge1 = { atlas = "Garr_LevelBadge_1" },
+    levelBadge2 = { atlas = "Garr_LevelBadge_2" },
+    levelBadge3 = { atlas = "Garr_LevelBadge_3" },
+    currencyBadge = { atlas = "common-currencybox-a" },
+    guildBadge = { atlas = "UI-Achievement-Guild-Badge" },
+    campaignBadge = { atlas = "AutoQuest-Badge-Campaign" },
+    rewardDisc = { atlas = "RecruitAFriend_RewardPane_IconBackground" },
+    goldRing2 = { atlas = "Azerite-GoldRing-Rank2" },
+    goldRing3 = { atlas = "Azerite-GoldRing-Rank3" },
+    titanDisc = { atlas = "Azerite-TitanBG-Rank2" },
+    housingDisc = { atlas = "house-upgrade-reward-icon-background" },
 }
+
+-- One entry per logo design; SQP/Classic share the existing SQP image.
+-- Other logos are bundled, so no source addon is a runtime dependency.
+SQP.LOGO_BACKGROUNDS = {
+    { key = "logo", label = "SQP / SQP Classic" },
+    { key = "BLU", label = "BLU" },
+    { key = "FinalFantasyLevelUp", label = "Final Fantasy LevelUp" },
+    { key = "FortniteLevelUp", label = "Fortnite LevelUp" },
+    { key = "KingdomHearts3LevelUp", label = "Kingdom Hearts 3 LevelUp" },
+    { key = "LeagueOfLegendsLevelUp", label = "League of Legends LevelUp" },
+    { key = "MaplestoryLevelUp", label = "Maplestory LevelUp" },
+    { key = "MinecraftLevelUp", label = "Minecraft LevelUp" },
+    { key = "ModernWarfare2LevelUp", label = "Modern Warfare 2 LevelUp" },
+    { key = "MorrowindLevelUp", label = "Morrowind LevelUp" },
+    { key = "PathOfExileLevelUp", label = "Path of Exile LevelUp" },
+    { key = "PokemonLevelUp", label = "Pokemon LevelUp" },
+    { key = "ReputationLevelUp", label = "Reputation LevelUp" },
+    { key = "RunescapeLevelUp", label = "Runescape LevelUp" },
+    { key = "SkyrimLevelUp", label = "Skyrim LevelUp" },
+    { key = "SonicTheHedgehogLevelUp", label = "Sonic the Hedgehog LevelUp" },
+    { key = "SuperMarioBros3LevelUp", label = "Super Mario Bros 3 LevelUp" },
+    { key = "Warcraft3LevelUp", label = "Warcraft 3 LevelUp" },
+    { key = "RemoveNameplateDebuffs", label = "RND" },
+    { key = "EnhancedTravelersLog", label = "ETL" },
+    { key = "CoordinationCloakUtility", label = "CCU" },
+    { key = "BattlePetUtility", label = "BPU" },
+}
+for _, logo in ipairs(SQP.LOGO_BACKGROUNDS) do
+    if logo.key ~= "logo" then
+        SQP.CHIP_TEXTURES[logo.key] = "Interface\\AddOns\\SimpleQuestPlates\\media\\backgrounds\\" .. logo.key .. ".tga"
+    end
+end
 
 -- Every control and renderer resolves the same baseline. Per-type fonts
 -- inherit General until an explicit override is saved.

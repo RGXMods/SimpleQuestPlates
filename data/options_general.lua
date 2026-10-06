@@ -135,7 +135,7 @@ function SQP:ApplyGlobalDisplayStyle(mode, backgroundOnly)
     end
     local dd = SQP.optionControls.unifiedDropdown
     if dd and type(dd.SetValue) == "function" then
-        dd:SetValue(mode == "chip" and "chip" or "icon")
+        dd:SetValue(mode == "chip" and ("chip:" .. (SQPSettings.chipTexture or "coin")) or "icon")
     end
     local box = SQP.optionControls.showIconBackgroundTextOnly
     if box and type(box.SetChecked) == "function" then
@@ -246,19 +246,60 @@ local function BuildDisplayPage(leftColumn, rightColumn, generalCard)
 
         if hasDropdown then
             -- One dropdown owns background choices; its value carries the chip
-            -- texture selection at the same time, using textures installed with
-            -- the product on every client.
-            local chipItems = {
+            -- texture selection at the same time.
+            local blizzardItems = {
                 { text = "Classic (default)", value = "icon" },
-                { text = "Chip: Soft square", value = "chip:square" },
-                { text = "Chip: Round plate", value = "chip:round" },
                 { text = "Chip: Coin (gold)", value = "chip:coin" },
-                { text = "Chip: Classic dark", value = "chip:dark" },
-                { text = "Chip: Logo", value = "chip:logo" },
+                { text = "Chip: Coin (silver)", value = "chip:silver" },
+                { text = "Chip: Coin (copper)", value = "chip:copper" },
+                { text = "Chip: Medal (gold)", value = "chip:medalGold" },
+                { text = "Chip: Medal (silver)", value = "chip:medalSilver" },
+                { text = "Chip: Medal (bronze)", value = "chip:medalBronze" },
+                { text = "Chip: Artifact gold medallion", value = "chip:artifactMedal" },
+                { text = "Chip: Guild achievement badge", value = "chip:guildBadge" },
+                { text = "Chip: Gold ring 2", value = "chip:goldRing2" },
+                { text = "Chip: Gold ring 3", value = "chip:goldRing3" },
+                { text = "Chip: Titan disc", value = "chip:titanDisc" },
+            }
+            -- Image-only labels; item text is the artwork markup. Names stay
+            -- in artworkLabel for data only.
+            for _, item in ipairs(blizzardItems) do
+                item.artworkLabel = item.text
+                local key = item.value:match("^chip:(.+)$")
+                local artwork = key and SQP.CHIP_TEXTURES[key]
+                if item.value == "icon" then
+                    item.text = "|TInterface\\QuestFrame\\AutoQuest-Parts:24:24:0:0:512:64:155:215:1:61|t"
+                elseif type(artwork) == "table" and artwork.atlas
+                    and type(CreateAtlasMarkup) == "function"
+                    and C_Texture and C_Texture.GetAtlasInfo
+                    and C_Texture.GetAtlasInfo(artwork.atlas) then
+                    item.text = CreateAtlasMarkup(artwork.atlas, 24, 24)
+                else
+                    item.text = string.format("|T%s:24:24:0:0|t", SQP.CHIP_TEXTURES.logo)
+                end
+            end
+            local rgxItems = {}
+            for _, logo in ipairs(SQP.LOGO_BACKGROUNDS) do
+                rgxItems[#rgxItems + 1] = {
+                    text = string.format("|T%s:24:24:0:0|t", SQP.CHIP_TEXTURES[logo.key]),
+                    artworkLabel = logo.label,
+                    value = "chip:" .. logo.key,
+                }
+            end
+            local chipItems = {
+                { text = "Blizzard", children = blizzardItems },
+                { text = "RGX", children = rgxItems },
             }
             local function CurrentMode()
                 if SQPSettings.unifiedNameplates == true then
-                    return "chip:" .. (SQPSettings.chipTexture or "square")
+                    local selected = "chip:" .. (SQPSettings.chipTexture or "coin")
+                    for _, group in ipairs(chipItems) do
+                        for _, item in ipairs(group.children) do
+                            if item.value == selected then return selected end
+                        end
+                    end
+                    SQPSettings.chipTexture = "coin"
+                    return "chip:coin"
                 end
                 return "icon"
             end
@@ -271,22 +312,32 @@ local function BuildDisplayPage(leftColumn, rightColumn, generalCard)
                 items = chipItems,
                 onChange = function(value)
                     if value == "icon" then
-                        SQP:SetSetting("unifiedNameplates", false)
-                        SQP:SetSetting("showIconBackground", false)
+                        SQP:ApplyGlobalDisplayStyle("icon", true)
                     else
-                        local chip = value:match("^chip:(.+)$") or "square"
+                        local chip = value:match("^chip:(.+)$") or "coin"
                         SQP:SetSetting("chipTexture", chip)
-                        SQP:SetSetting("unifiedNameplates", true)
+                        SQP:ApplyGlobalDisplayStyle("chip", true)
                     end
-                    SQP:RebuildQuestPlates()
-                    SQP:UpdatePreviewManually()
                 end,
             })
+            if dd and dd.retailTrigger then
+                -- Center the selected label on the retail trigger. The
+                -- framework keeps the menu alignment itself; this only
+                -- changes the closed button face for this control.
+                local regions = { dd.retailTrigger:GetRegions() }
+                for _, region in ipairs(regions) do
+                    if region.IsObjectType and region:IsObjectType("FontString") and region.GetText and region:GetText() ~= "v" then
+                        region:ClearAllPoints()
+                        region:SetPoint("CENTER", dd.retailTrigger, "CENTER", 0, 0)
+                        region:SetJustifyH("CENTER")
+                    end
+                end
+            end
             if dd then
                 if dd.label then dd.label:SetTextColor(0.345, 0.745, 0.506) end
                 dd:SetPoint("TOPLEFT", c, "TOPLEFT", 8, yOffset)
                 dd:SetPoint("TOPRIGHT", c, "TOPRIGHT", -8, yOffset)
-                SQP:SetControlTooltip(dd, "Pick every quest type's background: Classic icon or one of the shared chip shapes (all on every client).")
+                SQP:SetControlTooltip(dd, "Blizzard contains Classic, coins, medals and badges. RGX contains bundled addon logos. Background selection preserves Text Mode. Unavailable atlases show the SQP logo.")
                 SQP.optionControls.unifiedDropdown = dd
             end
         end
