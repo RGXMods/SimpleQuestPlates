@@ -185,24 +185,16 @@ function SQP:CreateLevelChip(parent)
         end
     end
     if not chip.usesLevelAtlas then
-        -- One shared "coin" chip texture that exists on every client, so the
-        -- Forever CAD label can render on Retail and Classic without help from
-        -- the client art archives. The transparent coin icon keeps the frame
-        -- dense around the number instead of a plain dark box.
-        local coinTex = "auctionhouse-icon-coin-gold"
-        if C_Texture and type(C_Texture.GetAtlasInfo) == "function"
-            and background.SetAtlas then
-            local okInfo, info = pcall(C_Texture.GetAtlasInfo, coinTex)
-            if okInfo and type(info) == "table" then
-                pcall(background.SetAtlas, background, coinTex)
-            else
-                background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-                background:SetAlpha(0.85)
-            end
-        else
-            background:SetTexture("Interface\\Minimap\\UI-Minimap-Background")
-            background:SetAlpha(0.85)
+        -- Palette of textures shipped by the product/Blizzard everywhere.
+        -- The dropdown picks one; the chip renders the same shape either way.
+        local map = SQP.CHIP_TEXTURES
+        local chosen = (SQPSettings.chipTexture or "square")
+        local tex = map and map[chosen] or nil
+        if type(tex) ~= "string" or tex == "" then
+            tex = "Interface\\Minimap\\UI-Minimap-Background"
         end
+        background:SetTexture(tex)
+        background:SetAlpha(0.85)
     end
     chip:Hide()
     return chip

@@ -111,6 +111,7 @@ SQP.DEFAULTS = {
     anchor = "RIGHT",
     relativeTo = "LEFT",
     unifiedNameplates = false,
+    chipTexture = "square",
     hideInCombat = false,
     hideInInstance = false,
     minimapIconEnabled = true,
@@ -204,6 +205,15 @@ SQP.DEFAULTS = {
 }
 
 SQP.defaultMinimapAngle = 220
+
+-- Chip textures: shared assets that exist on every supported client build.
+SQP.CHIP_TEXTURES = {
+    square = "Interface\\Buttons\\WHITE8x8",
+    round = "Interface\\Minimap\\UI-Minimap-Background",
+    coin = "auctionhouse-icon-coin-gold",
+    dark = "Interface\\OptionsFrame\\UI-OptionsFrame-NewFeatureIcon",
+    logo = "Interface\\AddOns\\SimpleQuestPlates\\media\\logo.tga",
+}
 
 -- Every control and renderer resolves the same baseline. Per-type fonts
 -- inherit General until an explicit override is saved.

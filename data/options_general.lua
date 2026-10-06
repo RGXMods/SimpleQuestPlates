@@ -261,7 +261,7 @@ local function BuildDisplayPage(leftColumn, rightColumn, generalCard)
                 value = CurrentMode(),
                 items = {
                     { text = "Classic (default)", value = "icon" },
-                    { text = "Coin", value = "chip" },
+                    { text = "Coin chip", value = "chip" },
                 },
                 onChange = function(value)
                     SQP:ApplyGlobalDisplayStyle(value, true)
@@ -271,10 +271,45 @@ local function BuildDisplayPage(leftColumn, rightColumn, generalCard)
                 if dd.label then dd.label:SetTextColor(0.345, 0.745, 0.506) end
                 dd:SetPoint("TOPLEFT", c, "TOPLEFT", 8, yOffset)
                 dd:SetPoint("TOPRIGHT", c, "TOPRIGHT", -8, yOffset)
-                SQP:SetControlTooltip(dd, "Pick every quest type's background: Classic icon or the Forever level-frame style.")
+                SQP:SetControlTooltip(dd, "Pick every quest type's background: Classic icon, or the shared Coin chip.")
                 SQP.optionControls.unifiedDropdown = dd
             end
         end
+
+        if hasDropdown then
+        -- Chip texture looks up a shared product asset always present on every
+        -- client; Presets select which shape variants to try first.
+        local chipItems = {
+            { text = "Coin (gold)", value = "coin" },
+            { text = "Soft square", value = "square" },
+            { text = "Round plate", value = "round" },
+            { text = "Classic dark", value = "dark" },
+            { text = "Logo", value = "logo" },
+        }
+        local chipDD = Drops:CreateNestedDropdown(c, {
+            label = "Chip texture",
+            width = 300,
+            buttonWidth = 290,
+            triggerStyle = "retail",
+            value = SQPSettings.chipTexture or "square",
+            items = chipItems,
+            onChange = function(value)
+                SQP:SetSetting("chipTexture", value)
+                SQP:RefreshAllNameplates()
+                if SQP.previewFrame and SQP.previewFrame.UpdatePreview then
+                    SQP.previewFrame:UpdatePreview()
+                end
+            end,
+        })
+        if chipDD then
+            if chipDD.label then chipDD.label:SetTextColor(0.345, 0.745, 0.506) end
+            chipDD:SetPoint("TOPLEFT", c, "TOPLEFT", 8, yOffset - 26)
+            chipDD:SetPoint("TOPRIGHT", c, "TOPRIGHT", -8, yOffset - 26)
+            SQP:SetControlTooltip(chipDD, "Chip texture: pick the built-in shape for the count background.")
+            SQP.optionControls.chipTextureDropdown = chipDD
+        end
+        end
+        yOffset = yOffset - 26
         displayCard:FitContent()
     end
 
