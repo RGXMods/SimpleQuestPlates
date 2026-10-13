@@ -1,4 +1,6 @@
-# v2.1.8 - 2026-10-06
+# Non-beta Candidate: [v2.1.9](changelogs/2.1.9.md)
+
+Retail 12.1.5 / Interface `120105`; client testing and publication pending.
 
 ## Changes
 - One Background style dropdown with Blizzard and RGX groups; choices include Classic (default), coin/medal/badge Blizzard artwork, and bundled RGX addon logos (LevelUp set, SQP, BLU, RND, ETL, CCU, BPU).
