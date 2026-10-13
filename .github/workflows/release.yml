@@ -28,7 +28,9 @@ on:
 
 env:
   CF_API_KEY: ${{ secrets.CF_API_KEY }}
-  WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+  # Wago is optional; keep the existing connection available without blocking
+  # required GitHub/CurseForge uploads when the operator has not opted in.
+  WAGO_API_TOKEN: ${{ vars.PUBLISH_WAGO == 'true' && secrets.WAGO_API_TOKEN || '' }}
   GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
   DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
@@ -165,7 +167,12 @@ jobs:
 
       - name: ℹ️ Upload Notes
         run: |
-          echo "CurseForge and Wago uploads are handled by BigWigsMods/packager."
+          echo "CurseForge uploads are handled by BigWigsMods/packager."
+          if [[ -n "${WAGO_API_TOKEN:-}" ]]; then
+            echo "Wago publishing is explicitly enabled."
+          else
+            echo "Wago publishing is disabled (optional; set PUBLISH_WAGO=true to enable)."
+          fi
           echo "Project IDs come from X-Curse-Project-ID and X-Wago-ID in SimpleQuestPlates.toc."
 
       - name: 📢 Send Discord Notification
@@ -188,7 +195,7 @@ jobs:
               footer="RGX Mods • Stable Release"
               description="A new stable release is live. Level up in style!"
               release_url="https://github.com/RGXMods/SimpleQuestPlates/releases/tag/v${version#v}"
-              downloads="[CurseForge](https://www.curseforge.com/wow/addons/simple-quest-plates) • [Wago](https://addons.wago.io/addons/simple-quest-plates) • [GitHub](${release_url})"
+              downloads="[CurseForge](https://www.curseforge.com/wow/addons/simplequestplates) • [GitHub](${release_url})"
               channel="Release"
               ;;
             "beta")
