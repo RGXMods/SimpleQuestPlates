@@ -7,6 +7,12 @@ ignore:
   - .gitignore
   - README.md
   - .pkgmeta
+  - .gitlab-ci.yml
+  - .claude
+  - AGENTS.md
+  - GEMINI.md
+  - docs
+  - tests
 
 plain-copy:
   - LICENSE

@@ -202,6 +202,13 @@ _<span style="color:#ff6b6b">Want to help translate?</span> <span style="color:#
 
 **<span style="color:#ff6b6b">Required Dependency:</span>** <span style="color:#e67e23">[RGX-Framework](https://github.com/RGXMods/RGX-Framework) must be installed and enabled.</span>
 
+The **2.1.10-beta.1 database hotfix** requires **RGX-Framework 2.7.18-beta.1
+or later**. Update both addons, then fully restart WoW. Do not delete your
+SavedVariables. This beta fixes a reproduced database adoption recursion and
+post-recovery settings writes; live Retail nameplate/profile/reload checks
+are still required before stable promotion. See the
+[beta changelog](docs/changelogs/2.1.10-beta.1.md).
+
 ---
 
 <a id="installation"></a>
