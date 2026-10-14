@@ -313,6 +313,28 @@ do
     _G.SQPForeverSettings = nil
 end
 
+-- Old settings-view aliases must not turn the framework's raw owner into a
+-- recursive proxy during ADDON_LOADED / PLAYER_LOGIN adoption.
+do
+    _G.SQPSettings = nil
+    local db = NewSQPDatabase(require("sqp_defaults"))
+    local settings, owner = db.global, _G.SQPSettings
+    settings.enabled = false
+    settings.offsetX = 0
+    _G.SQPSettings = settings
+    local ok = pcall(function() db:Adopt() end)
+    check(ok, "6: adopting an old settings alias must not C-stack-overflow")
+    if ok then
+        check(_G.SQPSettings == owner, "6: recovery must restore the plain SavedVariables owner")
+        check(settings.enabled == false and settings.offsetX == 0,
+            "6: nameplate-style reads must preserve false/zero after recovery")
+        local saved = Deserialize(Serialize(_G.SQPSettings))
+        check(saved.profiles.Default.enabled == false and saved.profiles.Default.offsetX == 0,
+            "6: recovered settings must remain serializable for reload")
+    end
+    _G.SQPSettings = nil
+end
+
 -- ---------------------------------------------------------------------------
 print(string.format("checks=%d failures=%d", checks, failures))
 if failures == 0 then
