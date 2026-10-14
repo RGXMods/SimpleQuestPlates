@@ -1,14 +1,15 @@
-# Beta: [v2.1.10-beta.1](changelogs/2.1.10-beta.1.md)
+# v2.1.10 - 2026-10-14
 
-Requires **RGX-Framework 2.7.18-beta.1 or later** for the database hotfix.
+Requires **RGX-Framework 2.7.18 or later** for the database hotfix.
 
 - Framework database adoption no longer recurses when an old consumer writes its
   live settings view into the SavedVariables global.
 - Framework profile-store recovery accepts subsequent settings writes again.
 - SQP keeps its module-local settings view and raw SavedVariables owner separate;
   regression coverage verifies recovered settings remain serializable.
-- Retail 12.1.5 / Interface `120105` unchanged. In-game nameplate, profile and
-  `/reload` verification remains pending before stable promotion.
+- Retail 12.1.5 / Interface `120105` and Forever `16001` unchanged.
+- Operator reports no issues after testing and explicitly approves stable
+  publication. Update both addons and fully restart WoW; preserve SavedVariables.
 
 # v2.1.8 - 2026-10-06
 
