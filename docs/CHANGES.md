@@ -1,3 +1,9 @@
+## v2.1.12 - 2026-11-04
+
+- No gameplay changes.
+- Release pipeline now builds with our own packager and publishes to CurseForge, Wago and WoWInterface (listing 26957).
+- Retail 12.1.5 / Interface `120105` and Forever `16001` unchanged.
+
 # v2.1.10 - 2026-10-14
 
 Requires **RGX-Framework 2.7.18 or later** for the database hotfix.
