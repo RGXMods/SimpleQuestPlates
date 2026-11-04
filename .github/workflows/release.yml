@@ -162,18 +162,50 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: 📦 Package and Release
-        uses: BigWigsMods/packager@master
-
-      - name: ℹ️ Upload Notes
+      - name: 📦 Build Package
         run: |
-          echo "CurseForge uploads are handled by BigWigsMods/packager."
-          if [[ -n "${WAGO_API_TOKEN:-}" ]]; then
-            echo "Wago publishing is explicitly enabled."
+          node tools/release/packager.mjs --toc SimpleQuestPlates.toc --out artifacts
+
+      - name: 📝 Write Release Notes
+        run: |
+          if [[ -f docs/CHANGES.md ]]; then
+            awk '/^## /{if (started) exit; started=1} started' docs/CHANGES.md > "${RUNNER_TEMP}/release-notes.md"
           else
-            echo "Wago publishing is disabled (optional; set PUBLISH_WAGO=true to enable)."
+            echo "Release ${GITHUB_REF_NAME}" > "${RUNNER_TEMP}/release-notes.md"
           fi
-          echo "Project IDs come from X-Curse-Project-ID and X-Wago-ID in SimpleQuestPlates.toc."
+
+      - name: 🚀 Publish Release
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WAGO_API_TOKEN: ${{ vars.PUBLISH_WAGO == 'true' && secrets.WAGO_API_TOKEN || '' }}
+        run: |
+          version=$(grep -m1 '^## Version' SimpleQuestPlates.toc | sed 's/.*: *//')
+          short="${version#v}"
+          case "$GITHUB_REF_NAME" in *-beta*|*-alpha*) rtype=beta ;; *) rtype=release ;; esac
+          node tools/release/publish-release.mjs \
+            --toc SimpleQuestPlates.toc \
+            --archive "artifacts/SimpleQuestPlates-v${short}.zip" \
+            --tag "${GITHUB_REF_NAME}" \
+            --release-type "$rtype" \
+            --changelog-file "${RUNNER_TEMP}/release-notes.md" \
+            --out artifacts
+
+      - name: 🌐 Publish to WoWInterface
+        if: startsWith(github.ref, 'refs/tags/')
+        shell: bash
+        env:
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+        run: |
+          version=$(grep -m1 '^## Version' SimpleQuestPlates.toc | sed 's/.*: *//')
+          short="${version#v}"
+          node tools/release/publish-wowinterface.mjs \
+            --toc SimpleQuestPlates.toc \
+            --archive "artifacts/SimpleQuestPlates-v${short}.zip" \
+            --changelog-file "${RUNNER_TEMP}/release-notes.md"
+
 
       - name: 📢 Send Discord Notification
         if: success()
