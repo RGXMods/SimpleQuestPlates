@@ -1,8 +1,4 @@
-## v2.1.13 - 2026-11-04
-
-- Fixed quest tracking not appearing on some enemies: objectives that pluralise a creature name ("Timber Wolves", "Kobold Workers") now match the plate.
-- Quest objective lines that the client hides behind protected values are skipped instead of raising errors that stopped the plate update.
-- Kill progress now refreshes nameplates immediately instead of waiting for the next quest log update.
-- Added a regression test for objective name matching (`tests/quest_match_test.lua`).
-- Runtime version string now matches the TOC.
+## v2.1.14 - 2026-11-04
+- Fixed "?" showing instead of the remaining count on drop-item and uniquely named item quests. When the game marks an enemy as quest-related but its tooltip has no objective line, the plate now resolves the unfinished item objective from your quest log and shows the real count.
+- Tooltip data is fully resolved before it is read, so objective lines are no longer missed on clients that defer line text.
 - Retail 12.1.5 / Interface `120105` and Forever `16001` unchanged.
