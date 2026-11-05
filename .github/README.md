@@ -9,4 +9,4 @@ Repository automation and platform metadata.
 ## Notes
 
 - Release automation is tag-driven (`v*`).
-- Packaging uses BigWigsMods packager plus platform API tokens from repository secrets.
+- Packaging uses our own `tools/release/packager.mjs`; CurseForge, Wago and WoWInterface publishing use tokens from repository secrets.
