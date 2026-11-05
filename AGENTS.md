@@ -20,7 +20,7 @@ SimpleQuestPlates overlays quest-objective progress on enemy nameplates. Main sh
 ## Testing And Release
 
 - There is no build step or automated test suite. Install the repository as `SimpleQuestPlates` in the Retail AddOns directory with `RGX-Framework`. Run `/reload` and verify `/sqp help`, `/sqp status`, `/sqp test`, quest and nameplate updates, options tabs and preview refreshes, SavedVariables persistence, and locale fallback behavior.
-- Stable releases from `main` use `vX.Y.Z` tags. `.github/workflows/release.yml` validates the tag against `SimpleQuestPlates.toc` and packages with BigWigsMods/packager; pushes to `dev` and `alpha` use those release channels. Update the TOC, `SQP.VERSION`, `docs/CHANGES.md`, and the matching `docs/changelogs/<version>.md` before tagging.
+- Stable releases from `main` use `vX.Y.Z` tags. `.github/workflows/release.yml` validates the tag against `SimpleQuestPlates.toc` and packages with the repo's own `tools/release/packager.mjs` (not BigWigs) and publishes with `tools/release/publish-release.mjs` to GitHub, CurseForge and Wago and `tools/release/publish-wowinterface.mjs` to WoWInterface; pushes to `dev` and `alpha` use those release channels. Update the TOC, `SQP.VERSION`, `docs/CHANGES.md`, and the matching `docs/changelogs/<version>.md` before tagging.
 
 ## Repository Workflow
 
