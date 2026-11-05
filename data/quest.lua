@@ -57,9 +57,15 @@ local OurName = UnitName('player')
 -- Constants
 local LE_SCENARIO_TYPE_CHALLENGE_MODE = LE_SCENARIO_TYPE_CHALLENGE_MODE or 2
 
+-- Secret values (modern clients, restricted contexts) throw on string ops.
+local function IsSecret(value)
+    return type(_G.issecretvalue) == "function" and _G.issecretvalue(value) and true or false
+end
+
 -- Normalize objective text for matching (strip counts, percents, color codes, and extra tokens)
 local function NormalizeObjectiveText(text)
     if not text then return nil end
+    if IsSecret(text) then return nil end
     if type(text) ~= "string" then
         text = tostring(text)
     end
@@ -90,15 +96,52 @@ local function GetRemainingFromObjectiveText(text)
     return nil
 end
 
+-- Objectives pluralise creature names ("Kobold Workers slain", "Wolves");
+-- build the singular/plural spellings of a normalized name to match against.
+local function NameVariants(name)
+    local variants = { name }
+    local head, last = strmatch(name, "^(.-)([^ ]+)$")
+    if not last or last == "" then return variants end
+    head = head or ""
+    variants[#variants + 1] = head .. last .. "s"
+    variants[#variants + 1] = head .. last .. "es"
+    if last:sub(-1) == "y" and #last > 2 then
+        variants[#variants + 1] = head .. last:sub(1, -2) .. "ies"
+    end
+    if last:sub(-2) == "lf" then
+        variants[#variants + 1] = head .. last:sub(1, -2) .. "ves"
+    end
+    if last:sub(-1) == "s" and #last > 3 then
+        variants[#variants + 1] = head .. last:sub(1, -2)
+    end
+    if last:sub(-3) == "ies" then
+        variants[#variants + 1] = head .. last:sub(1, -4) .. "y"
+    end
+    if last:sub(-3) == "ves" then
+        variants[#variants + 1] = head .. last:sub(1, -4) .. "f"
+    end
+    return variants
+end
+
 local function ObjectiveTextMatchesUnit(objText, unitNameNorm, objectiveType)
     if not objText or not unitNameNorm then return false end
     local objNorm = NormalizeObjectiveText(objText)
     if not objNorm or objNorm == "" then return false end
     if unitNameNorm == "" then return false end
     -- Names must match in full at word boundaries. Shared family words and
-    -- substrings (Wolf/Direwolf) are not evidence this unit is an objective.
-    return (" " .. objNorm .. " "):find(" " .. unitNameNorm .. " ", 1, true) ~= nil
+    -- substrings (Wolf/Direwolf) are not evidence this unit is an objective;
+    -- only plural spellings of the whole name are accepted.
+    local padded = " " .. objNorm .. " "
+    for _, variant in ipairs(NameVariants(unitNameNorm)) do
+        if padded:find(" " .. variant .. " ", 1, true) then
+            return true
+        end
+    end
+    return false
 end
+
+SQP.NormalizeObjectiveText = NormalizeObjectiveText
+SQP.ObjectiveTextMatchesUnit = ObjectiveTextMatchesUnit
 
 local function FindObjectiveTypeForText(text)
     if not text then return nil end
@@ -239,7 +282,11 @@ function SQP:GetQuestProgress(unitID)
         local tooltipObjectives = {}
 
         for _, line in ipairs(tooltipLines) do
+            if _G.TooltipUtil and _G.TooltipUtil.SurfaceArgs and type(line) == "table" then
+                pcall(_G.TooltipUtil.SurfaceArgs, line)
+            end
             local text = line.leftText
+            if IsSecret(text) then text = nil end
             local lineType = line.type
             if lineType and questTitleType and questPlayerType and questObjectiveType then
                 if lineType == questTitleType then
@@ -282,8 +329,7 @@ function SQP:GetQuestProgress(unitID)
             local chosen = tooltipObjectives[1]
             if unitNameNorm then
                 for _, tooltipObj in ipairs(tooltipObjectives) do
-                    local tNorm = NormalizeObjectiveText(tooltipObj.text)
-                    if tNorm and (tNorm:find(unitNameNorm, 1, true) or unitNameNorm:find(tNorm, 1, true)) then
+                    if ObjectiveTextMatchesUnit(tooltipObj.text, unitNameNorm) then
                         chosen = tooltipObj
                         break
                     end
