@@ -188,6 +188,41 @@ local function GetQuestObjectiveInfo(questID, index, isComplete)
     end
 end
 
+-- The client flags a unit as part of an active quest but its tooltip gave no
+-- objective line (drop-item and unique-named item quests: the unit name never
+-- appears in the objective text). Pick the unfinished quest-log objective that
+-- unit can satisfy. Creature-kill objectives name their creature, and this
+-- unit did not match any name, so item/object objectives are preferred.
+local function ResolveRelatedObjective()
+    local Compat = SQP.Compat
+    if not Compat or not Compat.GetNumQuestLogEntries then return nil end
+    local items, kills = {}, {}
+    for i = 1, Compat.GetNumQuestLogEntries() do
+        local info = Compat.GetInfo(i)
+        if info and not info.isHeader and not info.isHidden
+            and (not info.isComplete or info.isComplete == 0) then
+            local objectives = Compat.GetQuestObjectives(info.questID, i)
+            for _, obj in ipairs(objectives or {}) do
+                if not obj.finished and type(obj.text) == "string" then
+                    local numLeft, isPercent = GetRemainingFromObjectiveText(obj.text)
+                    if numLeft and numLeft > 0 then
+                        local entry = { text = obj.text, numLeft = numLeft,
+                            isPercent = isPercent, questID = info.questID or i }
+                        if obj.type == "item" or obj.type == "object" then
+                            items[#items + 1] = entry
+                        elseif obj.type ~= "event" then
+                            kills[#kills + 1] = entry
+                        end
+                    end
+                end
+            end
+        end
+    end
+    if #items > 0 then return items[1], "item" end
+    if #kills == 1 then return kills[1], "kill" end
+    return nil
+end
+
 -- Secret-safe progress cache: on modern clients a UnitGUID() result can be a
 -- secret value in restricted unit contexts, and indexing a plain table with
 -- a secret key throws. Cache access must never throw; on failure proceed
@@ -256,6 +291,9 @@ function SQP:GetQuestProgress(unitID)
         end
     end
     if tooltipData and tooltipData.lines then
+        if _G.TooltipUtil and _G.TooltipUtil.SurfaceArgs then
+            pcall(_G.TooltipUtil.SurfaceArgs, tooltipData)
+        end
         tooltipLines = tooltipData.lines
     else
         local scanTooltip = SQPScanTooltip or CreateFrame("GameTooltip", "SQPScanTooltip", nil, "GameTooltipTemplate")
@@ -394,6 +432,25 @@ function SQP:GetQuestProgress(unitID)
                 if questID then
                     processObjectivesFallback(questID)
                 end
+            end
+        end
+    end
+
+    if not progressGlob and SQP.Compat and SQP.Compat.IsQuestRelatedUnit
+        and UnitCanAttack and UnitCanAttack("player", unitID)
+        and not (UnitIsPlayer and UnitIsPlayer(unitID)) then
+        local okRel, related = pcall(SQP.Compat.IsQuestRelatedUnit, unitID)
+        if okRel and related then
+            local entry, kind = ResolveRelatedObjective()
+            if entry then
+                progressGlob = entry.text
+                questIdForItems = entry.questID
+                if kind == "item" then
+                    itemsNeeded = entry.numLeft
+                else
+                    objectiveCount = entry.numLeft
+                end
+                if entry.isPercent then questType = 3 end
             end
         end
     end
