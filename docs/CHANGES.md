@@ -1,3 +1,6 @@
+## v2.1.16 - 2026-11-05
+- Fixed the options preview showing the nameplate but no questplate until an options control was clicked: the preview now refreshes again on the next frames after it opens, once the client has laid the preview nameplate out.
+
 ## v2.1.15 - 2026-11-05
 - Fixed the Minimap Icon option showing the wrong state after the icon was hidden with Ctrl+Right-click or `/sqp icon off`: the checkbox now follows the saved setting, so the next click no longer undoes it.
 
