@@ -881,6 +881,17 @@ function SQP:CreatePreviewSection(parent)
     previewFrame:SetScript("OnShow", function(self)
         if self.plate then self.plate:Show() end
         self:UpdatePreview()
+        -- The client lays the preview nameplate out (and registers its unit)
+        -- after OnShow returns, so the first update can anchor the overlay to a
+        -- zero-sized health bar and the questplate stays blank until some
+        -- options control triggers another refresh. Re-apply on the next frames.
+        if C_Timer and C_Timer.After then
+            for _, delay in ipairs({ 0, 0.15 }) do
+                C_Timer.After(delay, function()
+                    if self:IsShown() then self:UpdatePreview() end
+                end)
+            end
+        end
     end)
 
     -- Type-switcher button state: alpha dims inactive buttons and the
