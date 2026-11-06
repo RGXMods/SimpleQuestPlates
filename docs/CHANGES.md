@@ -1,3 +1,6 @@
+## v2.1.17 - 2026-11-06
+- Fixed enemy nameplate debuffs (and classification and raid-target icons) disappearing on some nameplates after you had opened the SQP options. The options preview reuses one of the game's pooled nameplate frames and hid its aura frame with a hook that was never removed, so a live nameplate that later received that frame kept its debuffs hidden. The hook now only acts while the preview owns the frame, and the frame is handed back with its decorations shown when the preview closes.
+
 ## v2.1.16 - 2026-11-05
 - Fixed the options preview showing the nameplate but no questplate until an options control was clicked: the preview now refreshes again on the next frames after it opens, once the client has laid the preview nameplate out.
 
