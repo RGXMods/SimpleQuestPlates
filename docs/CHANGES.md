@@ -1,3 +1,6 @@
+## v2.1.18 - 2026-11-06
+- The minimap icon choice is now saved the moment you change it, even if the button was not built yet, and it is re-applied at login and after every loading screen. Another addon re-showing the button can no longer bring back an icon you hid, and a failed first setup is retried at login instead of being skipped for the whole session.
+
 ## v2.1.17 - 2026-11-06
 - Fixed enemy nameplate debuffs (and classification and raid-target icons) disappearing on some nameplates after you had opened the SQP options. The options preview reuses one of the game's pooled nameplate frames and hid its aura frame with a hook that was never removed, so a live nameplate that later received that frame kept its debuffs hidden. The hook now only acts while the preview owns the frame, and the frame is handed back with its decorations shown when the preview closes.
 
