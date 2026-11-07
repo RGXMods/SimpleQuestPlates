@@ -83,7 +83,7 @@ local function GetAddOnMetadataCompat(name, field)
     return nil
 end
 
-SQP.VERSION = "2.1.19" -- Addon version (also in TOC file)
+SQP.VERSION = "2.1.20" -- Addon version (also in TOC file)
 SQP.NAME = GetAddOnMetadataCompat(addonName, "Title") or addonName or "SimpleQuestPlates"
 SQP.AUTHOR = GetAddOnMetadataCompat(addonName, "Author") or "DonnieDice"
 SQP.LOCALE = GetLocale()
@@ -657,6 +657,12 @@ function SQP:ApplyMinimapVisibility()
         frame:HookScript("OnShow", function(self)
             if SQPSettings.minimapIconEnabled == false then self:Hide() end
         end)
+    end
+    -- A minimap-button collector (ElvUI WindTools etc.) reparents the button and owns whether it
+    -- shows inside its own bar; only a hide is enforced there, never a forced show.
+    local collected = frame and frame.GetParent and _G.Minimap and frame:GetParent() ~= _G.Minimap
+    if collected and wanted then
+        return true
     end
     if wanted ~= (frame and frame:IsShown() and true or false) then
         button:SetVisible(wanted)
