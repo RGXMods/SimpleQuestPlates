@@ -88,4 +88,13 @@ s4.SetupMinimapButton = function() end
 s4:ToggleMinimapIcon(false, true)
 check(_G.SQPSettings.profiles.Default.minimapIconEnabled == false, "the choice is saved without a button")
 
+-- A button taken over by a collector addon is not force-shown by the re-apply.
+local s5 = session(nil)
+s5:ApplyMinimapVisibility()
+local collectorBar = newFrame()
+s5.minimapBtn.frame.GetParent = function() return collectorBar end
+s5.minimapBtn.frame.shown = false          -- the collector's bar is hidden
+s5:ApplyMinimapVisibility()
+check(s5.minimapBtn.frame.shown == false, "a collected button is not force-shown on a loading screen")
+
 print("minimap_persist_test OK")
