@@ -17,11 +17,20 @@ local function decoration()
   local d = { shown = true, hooks = {} }
   function d:HookScript(name, fn) if name == "OnShow" then self.hooks[#self.hooks + 1] = fn end end
   function d:Hide() self.shown = false end
+  function d:IsShown() return self.shown end
   function d:Show() self.shown = true; for _, h in ipairs(self.hooks) do h(self) end end
   return d
 end
 
-local unitFrame = { ClassificationFrame = decoration(), RaidTargetFrame = decoration(), AurasFrame = decoration() }
+-- Like the client's NamePlateRaidTargetMixin: shown only while the unit has a marker.
+local function component(hasContent)
+  local d = decoration()
+  d.shown = false
+  function d:UpdateShownState() if hasContent(self) then self:Show() else self:Hide() end end
+  return d
+end
+local unitFrame = { ClassificationFrame = component(function(d) return d.classified end),
+  RaidTargetFrame = component(function(d) return d.marker end), AurasFrame = decoration() }
 local realPlate = { UnitFrame = unitFrame }
 local hide, release = chunk(realPlate, {})
 
@@ -31,10 +40,19 @@ check(not unitFrame.AurasFrame.shown, "preview hides the aura frame")
 unitFrame.AurasFrame:Show()
 check(not unitFrame.AurasFrame.shown, "the client re-showing it during the preview is suppressed")
 
--- The preview closes: the pooled frame must be handed back untouched.
+-- The preview closes: the pooled frame goes back as the client expects it. The aura frame is
+-- shown again, but a marker/classification frame is only shown if the unit actually has one.
 release()
-check(unitFrame.AurasFrame.shown and unitFrame.ClassificationFrame.shown and unitFrame.RaidTargetFrame.shown,
-  "decorations are shown again when the preview releases the frame")
+check(unitFrame.AurasFrame.shown, "the aura frame is shown again when the preview releases the frame")
+check(not unitFrame.RaidTargetFrame.shown, "an unmarked unit's raid target frame is NOT forced visible (marker on every plate bug)")
+check(not unitFrame.ClassificationFrame.shown, "a plain unit's classification frame is NOT forced visible")
+
+-- A pooled frame whose unit really is marked keeps its marker after the preview releases it.
+unitFrame.RaidTargetFrame.marker = true
+hide(); release()
+check(unitFrame.RaidTargetFrame.shown, "a marked unit's raid target frame is shown after release")
+unitFrame.RaidTargetFrame.marker = nil
+unitFrame.RaidTargetFrame:Hide()
 
 -- A live nameplate now acquires that same pooled frame; the client shows its auras.
 unitFrame.AurasFrame.shown = false

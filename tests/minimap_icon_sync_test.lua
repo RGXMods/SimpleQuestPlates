@@ -7,7 +7,7 @@ f:close()
 
 local first = assert(source:find("function SQP:ToggleMinimapIcon", 1, true), "ToggleMinimapIcon not found")
 local last = assert(source:find("function SQP:ApplyMinimapVisibility", first, true), "ApplyMinimapVisibility not found")
-local chunk = assert(loadstring("local SQP = ...\n" .. source:sub(first, last - 1) .. "\nreturn SQP"))
+local chunk = assert(loadstring("local SQP = ...\nlocal SQPSettings = {}\n" .. source:sub(first, last - 1) .. "\nreturn SQP"))
 
 local function check(cond, msg) if not cond then error("CHECK FAILED: " .. msg, 2) end end
 

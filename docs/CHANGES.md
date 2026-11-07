@@ -1,3 +1,6 @@
+## v2.1.19 - 2026-11-07
+- Fixed raid target markers (and classification icons) appearing on every enemy nameplate after opening the SQP options. Closing the options preview force-showed the pooled nameplate frame's marker and classification frames, so they showed on plates that had no marker. They are now handed back to the client to decide: a marker only shows on a unit that has one. If it is already happening, /reload once after updating.
+
 ## v2.1.18 - 2026-11-06
 - The minimap icon choice is now saved the moment you change it, even if the button was not built yet, and it is re-applied at login and after every loading screen. Another addon re-showing the button can no longer bring back an icon you hid, and a failed first setup is retried at login instead of being skipped for the whole session.
 
