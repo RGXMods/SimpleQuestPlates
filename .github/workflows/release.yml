@@ -6,9 +6,6 @@ on:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - 'v[0-9]+.[0-9]+.[0-9]+-beta*'
       - 'v[0-9]+.[0-9]+.[0-9]+-alpha*'
-    branches:
-      - alpha
-      - dev
   workflow_dispatch:
     inputs:
       release_type:
@@ -69,12 +66,6 @@ jobs:
                 else
                   echo "type=release" >> $GITHUB_OUTPUT
                 fi
-                ;;
-              refs/heads/dev)
-                echo "type=dev" >> $GITHUB_OUTPUT
-                ;;
-              refs/heads/alpha)
-                echo "type=alpha-branch" >> $GITHUB_OUTPUT
                 ;;
               *)
                 echo "type=unknown" >> $GITHUB_OUTPUT
@@ -247,15 +238,6 @@ jobs:
               release_url="https://github.com/RGXMods/SimpleQuestPlates/tree/alpha"
               downloads="[GitHub Alpha Branch](${release_url})"
               channel="Alpha"
-              ;;
-            "dev")
-              title="SQP | Simple Quest Plates! ${version} (Dev)"
-              color=3447003
-              footer="RGX Mods • Dev Build"
-              description="Development build from the dev branch."
-              release_url="https://github.com/RGXMods/SimpleQuestPlates/tree/dev"
-              downloads="[GitHub Dev Branch](${release_url})"
-              channel="Dev"
               ;;
             *)
               title="SQP | Simple Quest Plates! ${version}"
