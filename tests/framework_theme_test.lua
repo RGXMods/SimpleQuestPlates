@@ -36,4 +36,9 @@ check(p[1] == GREEN[1], "no framework design module: SQP green")
 p = run({ themePreset = "gold" }, presets)
 p[1] = 0
 check(presets.gold.primary[1] == 1, "the framework preset table is not shared")
+-- the framework theme is optional: switched off, SQP keeps its own colours
+p = run({ themePreset = "gold", themeOverride = false }, presets)
+check(p[1] == GREEN[1], "framework theme switched off: SQP green")
+p = run({ themePreset = "gold", themeOverride = true }, presets)
+check(p[1] == 1, "framework theme switched on: the chosen preset")
 print("framework_theme_test OK")

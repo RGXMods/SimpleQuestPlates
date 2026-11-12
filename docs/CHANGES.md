@@ -1,3 +1,6 @@
+## v2.1.22 - 2026-11-11
+- The framework theme is optional: when "Apply the framework theme to addons" is switched off on the RGX-Framework settings page, SQP keeps its own colours.
+
 ## v2.1.21 - 2026-11-11
 - SQP's options follow the main colour chosen on the RGX-Framework settings page (Theme tab). Until a colour is chosen there, SQP keeps its own green. A colour change applies after a /reload.
 
