@@ -1,3 +1,6 @@
+## v2.1.21 - 2026-11-11
+- SQP's options follow the main colour chosen on the RGX-Framework settings page (Theme tab). Until a colour is chosen there, SQP keeps its own green. A colour change applies after a /reload.
+
 ## v2.1.20 - 2026-11-07
 - The minimap icon re-apply step no longer force-shows a button that a minimap-button collector addon (such as ElvUI WindTools) has taken over, so it cannot fight the collector's own bar. A hide you chose is still enforced.
 
