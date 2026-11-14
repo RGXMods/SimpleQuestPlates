@@ -14,19 +14,22 @@ SQP.OwnBrand = { primary = { 0.345, 0.745, 0.506 }, accent = { 0.737, 0.435, 0.6
 SQP.Brand = { primary = { 0.345, 0.745, 0.506 }, accent = { 0.737, 0.435, 0.659 } }
 SQP.SECTION_COLOR = SQP.Brand.primary
 
-function SQP:ResolveBrand()
+-- The addon's brand, registered with the framework (2.19+): SQP's own pair, or the framework's main colour while
+-- its beta global theme override is on. The options panel is built with it and redraws itself on a change.
+function SQP:GetBrand()
     local D = _G.RGXDesign
-    local own, live = self.OwnBrand, self.Brand
-    local theme
-    if D and type(D.ResolveAddonTheme) == "function" then
-        theme = D:ResolveAddonTheme(own, nil)
-    else
-        local db = rawget(_G, "RGXFrameworkDB")
-        local preset = type(db) == "table" and db.themeOverride == true and db.themePreset
-        local chosen = preset and D and D.THEME_PRESETS and D.THEME_PRESETS[preset]
-        if type(chosen) == "table" and type(chosen.primary) == "table" then theme = chosen end
+    if not self.BrandObj and D and type(D.RegisterBrand) == "function" then
+        self.BrandObj = D:RegisterBrand("SimpleQuestPlates", self.OwnBrand, nil)
+        self.BrandObj:OnChange(function() SQP:ResolveBrand() end)
     end
-    theme = theme or own
+    return self.BrandObj
+end
+
+-- Rewrite SQP.Brand in place from the brand (option pages read it at paint time) and return it.
+function SQP:ResolveBrand()
+    local brand = self:GetBrand()
+    local own, live = self.OwnBrand, self.Brand
+    local theme = brand and brand:Resolve() or own
     local p, a = theme.primary or own.primary, theme.accent or own.accent
     live.primary[1], live.primary[2], live.primary[3] = p[1], p[2], p[3]
     live.accent[1], live.accent[2], live.accent[3] = a[1], a[2], a[3]
@@ -70,10 +73,10 @@ function SQP:CreateOptionsPanel()
     local function WithBrand(fn)
         return function(...)
             local args = { ... }
-            if Design and Design.WithTheme then
-                local result
-                Design:WithTheme(BrandTheme, function() result = fn(unpack(args)) end)
-                return result
+            local brand = SQP:GetBrand()
+            if brand then
+                SQP:ResolveBrand()
+                return brand:Build(function() return fn(unpack(args)) end)
             end
             return fn(...)
         end
@@ -82,6 +85,7 @@ function SQP:CreateOptionsPanel()
     local function Build()
         return UI:CreateOptionsPanel({
         addonName    = addonName,
+        brand        = SQP:GetBrand(),
         theme        = BrandTheme,
         title        = SQP.NAME,
         sidebarTitle = (SQP.NAME:gsub("%s*%b()", "")),
@@ -156,8 +160,9 @@ function SQP:CreateOptionsPanel()
         })
     end
 
-    if Design and Design.WithTheme then
-        Design:WithTheme(BrandTheme, function() self.optionsPanel = Build() end)
+    local brand = SQP:GetBrand()
+    if brand then
+        self.optionsPanel = brand:Build(Build)
     else
         self.optionsPanel = Build()
     end

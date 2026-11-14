@@ -11,7 +11,7 @@
 ## IconTexture: Interface\AddOns\SimpleQuestPlates\media\logo.tga
 ## DefaultState: Enabled
 ## RequiredDeps: RGX-Framework
-## X-RGX-Framework-MinVersion: 2.7.18
+## X-RGX-Framework-MinVersion: 2.19.0
 
 ## X-Category: UI Media, Questing & Leveling, Miscellaneous
 ## X-Localizations: enUS, enGB, deDE, esES, esMX, frFR, itIT, koKR, ptBR, ptPT, ruRU, zhCN, zhTW
