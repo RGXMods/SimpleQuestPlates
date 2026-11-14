@@ -5,3 +5,19 @@ include:
   - project: rgxmods/warcraft/RGX-Framework
     ref: main
     file: /.gitlab/ci/addon.yml
+
+# SQP's own test suite. Two tests load the framework's real database code from a sibling checkout, so the
+# job clones the public RGX-Framework mirror next to this repository first.
+test:sqp:
+  stage: validate
+  image: alpine:3.20
+  script:
+    - apk add --no-cache lua5.1 git
+    - git clone --depth 1 https://github.com/RGXMods/RGX-Framework.git ../RGX-Framework
+    - |
+      for t in tests/*_test.lua; do
+        case "$t" in tests/savedvariables_test.lua) continue ;; esac
+        echo "test $t"
+        lua5.1 "$t" || exit 1
+      done
+    - RGXFW_PATH=../RGX-Framework lua5.1 tests/run.lua

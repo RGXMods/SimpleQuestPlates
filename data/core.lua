@@ -83,7 +83,7 @@ local function GetAddOnMetadataCompat(name, field)
     return nil
 end
 
-SQP.VERSION = "2.1.20" -- Addon version (also in TOC file)
+SQP.VERSION = GetAddOnMetadataCompat(addonName, "Version") or "unknown" -- read from the TOC, the one place the version lives
 SQP.NAME = GetAddOnMetadataCompat(addonName, "Title") or addonName or "SimpleQuestPlates"
 SQP.AUTHOR = GetAddOnMetadataCompat(addonName, "Author") or "DonnieDice"
 SQP.LOCALE = GetLocale()
