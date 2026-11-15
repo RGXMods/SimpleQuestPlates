@@ -1,3 +1,8 @@
+## v2.1.23 - 2026-11-14
+- The options follow the RGX-Framework theme override (beta, off by default) live, including the headings that were always green. With the override off SQP looks as before. Requires RGX-Framework 2.19.0.
+- Opening the options no longer changes the colour of other RGX addons.
+- The version shown in chat is read from the addon (it showed 2.1.20).
+
 ## v2.1.22 - 2026-11-11
 - The framework theme is optional: when "Apply the framework theme to addons" is switched off on the RGX-Framework settings page, SQP keeps its own colours.
 
