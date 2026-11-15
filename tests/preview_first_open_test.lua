@@ -28,6 +28,17 @@ local function check(cond, msg) if not cond then error("CHECK FAILED: " .. msg, 
 
 local timers = {}
 _G.C_Timer = { After = function(delay, fn) timers[#timers + 1] = { delay = delay, fn = fn } end }
+local frameworkSchedules = 0
+_G.RGXFramework = {
+  After = function(self, delay, fn, label)
+    check(self == _G.RGXFramework, "timer is owned by the framework")
+    frameworkSchedules = frameworkSchedules + 1
+    timers[#timers + 1] = { delay = delay, fn = fn, label = label }
+  end,
+}
+_G.SQPSettings = setmetatable({}, {
+  __newindex = function() error("preview scheduling must not write settings") end,
+})
 
 local updates, shown = 0, true
 local previewFrame = {
@@ -36,12 +47,16 @@ local previewFrame = {
   UpdatePreview = function() updates = updates + 1 end,
   SetScript = function(self, name, fn) self[name] = fn end,
 }
-local chunk = assert(loadstring("local previewFrame = ...\n" .. handlerSource))
+local chunk = assert(loadstring("local previewFrame = ...\nlocal RGX = _G.RGXFramework\n" .. handlerSource))
 chunk(previewFrame)
 
 previewFrame.OnShow(previewFrame)
 check(updates == 1, "an immediate update runs on show")
 check(#timers >= 2, "follow-up updates are scheduled after the client lays the plate out")
+check(frameworkSchedules == 2, "both deferred updates use framework timers")
+check(timers[1].delay == 0 and timers[2].delay == 0.15, "layout refresh timing is preserved")
+check(timers[1].label == "SQP preview refresh" and timers[2].label == "SQP preview refresh",
+  "preview timers carry a stable diagnostic label")
 for _, t in ipairs(timers) do t.fn() end
 check(updates == 1 + #timers, "each follow-up refreshes the preview while it is open")
 
@@ -51,5 +66,17 @@ previewFrame.OnShow(previewFrame)
 shown = false
 for _, t in ipairs(timers) do t.fn() end
 check(updates == 1, "no follow-up refresh once the preview is hidden")
+
+-- Reopening schedules another pair; consecutive show transitions retain deferred
+-- updates without running them inline or mutating saved options.
+timers, updates, shown = {}, 0, true
+local scheduledBefore = frameworkSchedules
+previewFrame.OnShow(previewFrame)
+previewFrame.OnShow(previewFrame)
+check(updates == 2, "each show performs only its immediate update synchronously")
+check(#timers == 4 and frameworkSchedules == scheduledBefore + 4,
+  "repeated shows schedule the same framework-owned pair")
+for _, t in ipairs(timers) do t.fn() end
+check(updates == 6, "each deferred update still runs after reopening")
 
 print("preview_first_open_test OK")
