@@ -26,6 +26,6 @@ check(SQP:BrandHex() == "|cffffd700", "the hex follows (" .. SQP:BrandHex() .. "
 on = false
 listener()
 check(held[1] == 0.345, "override off again: SQP green")
-check(src:find("brand        = SQP:GetBrand(),", 1, true), "the options panel is built with the brand, so it redraws itself")
+check(src:find("addonBrand   = SQP:GetBrand(),", 1, true), "the options panel is built with the brand, so it redraws itself")
 check(not src:find("SetHighlightColor", 1, true), "SQP never changes the framework's shared theme")
 io.write("BrandOverride OK\n")

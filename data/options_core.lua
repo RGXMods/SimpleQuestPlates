@@ -85,7 +85,7 @@ function SQP:CreateOptionsPanel()
     local function Build()
         return UI:CreateOptionsPanel({
         addonName    = addonName,
-        brand        = SQP:GetBrand(),
+        addonBrand   = SQP:GetBrand(),
         theme        = BrandTheme,
         title        = SQP.NAME,
         sidebarTitle = (SQP.NAME:gsub("%s*%b()", "")),
