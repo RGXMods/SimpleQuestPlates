@@ -10,7 +10,7 @@
 - SQP's options follow the main colour chosen on the RGX-Framework settings page (Theme tab). Until a colour is chosen there, SQP keeps its own green. A colour change applies after a /reload.
 
 ## v2.1.20 - 2026-11-07
-- The minimap icon re-apply step no longer force-shows a button that a minimap-button collector addon (such as ElvUI WindTools) has taken over, so it cannot fight the collector's own bar. A hide you chose is still enforced.
+- The minimap icon re-apply step no longer force-shows a button that a minimap-button collector addon has taken over, so it cannot fight the collector's own bar. A hide you chose is still enforced.
 
 ## v2.1.19 - 2026-11-07
 - Fixed raid target markers (and classification icons) appearing on every enemy nameplate after opening the SQP options. Closing the options preview force-showed the pooled nameplate frame's marker and classification frames, so they showed on plates that had no marker. They are now handed back to the client to decide: a marker only shows on a unit that has one. If it is already happening, /reload once after updating.

@@ -658,7 +658,7 @@ function SQP:ApplyMinimapVisibility()
             if SQPSettings.minimapIconEnabled == false then self:Hide() end
         end)
     end
-    -- A minimap-button collector (ElvUI WindTools etc.) reparents the button and owns whether it
+    -- A minimap-button collector addon reparents the button and owns whether it
     -- shows inside its own bar; only a hide is enforced there, never a forced show.
     local collected = frame and frame.GetParent and _G.Minimap and frame:GetParent() ~= _G.Minimap
     if collected and wanted then
