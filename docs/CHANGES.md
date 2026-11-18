@@ -1,3 +1,10 @@
+## v2.1.23 - 2026-11-18
+- Quest plates in dungeons show the number left instead of a question mark. Inside dungeons the game hides mob names from addons, so SQP now reads the quest objective from the mob's tooltip when it can and otherwise from your quests on the current map, instead of giving up.
+- The colour swatches open the RGX colour picker (with RGX-Framework 2.19.0) instead of the game's.
+- The options follow the RGX-Framework theme override (beta, off by default) live, including the headings that were always green. With the override off SQP looks as before. Requires RGX-Framework 2.19.0.
+- Opening the options no longer changes the colour of other RGX addons.
+- The version shown in chat is read from the addon (it showed 2.1.20).
+
 ## v2.1.22 - 2026-11-11
 - The framework theme is optional: when "Apply the framework theme to addons" is switched off on the RGX-Framework settings page, SQP keeps its own colours.
 
@@ -5,7 +12,7 @@
 - SQP's options follow the main colour chosen on the RGX-Framework settings page (Theme tab). Until a colour is chosen there, SQP keeps its own green. A colour change applies after a /reload.
 
 ## v2.1.20 - 2026-11-07
-- The minimap icon re-apply step no longer force-shows a button that a minimap-button collector addon (such as ElvUI WindTools) has taken over, so it cannot fight the collector's own bar. A hide you chose is still enforced.
+- The minimap icon re-apply step no longer force-shows a button that a minimap-button collector addon has taken over, so it cannot fight the collector's own bar. A hide you chose is still enforced.
 
 ## v2.1.19 - 2026-11-07
 - Fixed raid target markers (and classification icons) appearing on every enemy nameplate after opening the SQP options. Closing the options preview force-showed the pooled nameplate frame's marker and classification frames, so they showed on plates that had no marker. They are now handed back to the client to decide: a marker only shows on a unit that has one. If it is already happening, /reload once after updating.
