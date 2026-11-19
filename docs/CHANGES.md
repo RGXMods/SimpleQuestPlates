@@ -1,3 +1,7 @@
+## v2.1.24 - 2026-11-19
+
+- The options preview refreshes through the framework's timers instead of ones SQP made itself, so they stop when the preview closes.
+
 ## v2.1.23 - 2026-11-18
 - Quest plates in dungeons show the number left instead of a question mark. Inside dungeons the game hides mob names from addons, so SQP now reads the quest objective from the mob's tooltip when it can and otherwise from your quests on the current map, instead of giving up.
 - The colour swatches open the RGX colour picker (with RGX-Framework 2.19.0) instead of the game's.
